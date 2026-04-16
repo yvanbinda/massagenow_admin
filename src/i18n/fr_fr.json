@@ -1,0 +1,217 @@
+{
+  "login": {
+    "title": "Accès Sécurisé",
+    "subtitle": "Identifiez-vous pour accéder au centre de commande.",
+    "email_label": "Email de l'administrateur",
+    "password_label": "Mot de passe",
+    "button": "Se connecter au tableau de bord",
+    "quote": "L'excellence n'est pas une compétence. C'est une attitude."
+  },
+  "sidebar": {
+    "dashboard": "Tableau de bord",
+    "kyc": "Vérification KYC",
+    "users": "Gestion des utilisateurs",
+    "payments": "Finances",
+    "settings": "Paramètres",
+    "signout": "Se déconnecter"
+  },
+  "header": {
+    "search_placeholder": "Appuyez sur ⌘K pour rechercher...",
+    "alerts_title": "Alertes de la plateforme",
+    "mark_all_read": "Tout marquer comme lu",
+    "no_alerts": "Tous les systèmes sont optimaux. Pas de nouvelles alertes.",
+    "role_badge": "Super Administrateur",
+    "settings": "Paramètres de la plateforme",
+    "manage_access": "Gérer les accès",
+    "dark_mode": "Mode Sombre",
+    "logout": "Déconnexion sécurisée",
+    "quick_actions": "Actions Rapides",
+    "therapists": "Thérapeutes",
+    "transactions": "Transactions",
+    "audit_logs": "Journaux d'audit",
+    "view_all": "Voir toutes les notifications"
+  },
+  "notifications": {
+    "title": "Centre de Notifications",
+    "filter_severity": "Sévérité",
+    "filter_category": "Catégorie",
+    "all": "Tout",
+    "critical": "Critique",
+    "warning": "Avertissement",
+    "info": "Information",
+    "mark_read": "Marquer comme lu",
+    "archive": "Archiver",
+    "export": "Exporter CSV",
+    "no_results": "Aucune notification trouvée."
+  },
+  "users": {
+    "title": "Annuaire de la plateforme",
+    "subtitle": "Gérez les prestataires et les clients de l'écosystème MassageNOW.",
+    "tab_therapists": "Thérapeutes",
+    "tab_patients": "Patients",
+    "status_active": "Actif",
+    "status_suspended": "Suspendu",
+    "status_flagged": "Signalé",
+    "table": {
+      "therapist": "Prestataire",
+      "speciality": "Spécialité",
+      "match_health": "Santé Match",
+      "earnings": "Revenus totaux",
+      "status": "Statut",
+      "patient": "Patient",
+      "ltv": "Valeur Vie (LTV)",
+      "sessions": "Sessions",
+      "last_active": "Dernière activité"
+    },
+    "detail": {
+      "back": "Retour à l'annuaire",
+      "profile_title": "Profil Thérapeute",
+      "profile_title_patient": "Profil Patient",
+      "member_since": "Membre depuis",
+      "kyc_verified": "Vérifié KYC",
+      "danger_zone": "Zone de Danger",
+      "suspend": "Suspendre le compte",
+      "force_reset": "Réinitialiser le mot de passe",
+      "remove": "Retirer du marché",
+      "services_title": "Menu des Services Actifs",
+      "bookings_title": "Réservations Récentes",
+      "stripe_status": "Statut Stripe Connect",
+      "financials_title": "Performance Financière",
+      "total_processed": "Total Traité",
+      "platform_commission": "Commission Plateforme",
+      "matchmaking_blueprint": "Blueprint de Matchmaking",
+      "environment": "Environnement Préféré",
+      "max_budget": "Budget Max",
+      "technique": "Technique",
+      "gender_pref": "Genre du Thérapeute",
+      "behavioral_history": "Historique Comportemental",
+      "cancellation_rate": "Taux d'annulation",
+      "no_show_count": "Nombre de No-Show",
+      "support_tickets": "Tickets de Support",
+      "payment_vault": "Coffre-fort de Paiement",
+      "promo_codes": "Codes Promos",
+      "ltv_label": "Valeur à vie (LTV)",
+      "total_spent": "Total dépensé sur MassageNOW"
+    }
+  },
+  "finance": {
+    "title": "Paiements & Finances",
+    "subtitle": "Suivi des flux de fonds, des commissions de plateforme et des reversements aux thérapeutes.",
+    "gross_volume": "Volume Brut (GPV)",
+    "platform_revenue": "Revenu Plateforme",
+    "pending_payouts": "Reversements en attente",
+    "active_disputes": "Litiges Actifs",
+    "tabs": {
+      "transactions": "Transactions",
+      "payouts": "Reversements",
+      "disputes": "Litiges & Remboursements"
+    },
+    "table": {
+      "txn_id": "ID Transaction",
+      "patient": "Patient",
+      "therapist": "Thérapeute",
+      "amount": "Montant Brut",
+      "fee": "Frais Plateforme",
+      "status": "Statut"
+    },
+    "receipt": {
+      "title": "Reçu de Transaction",
+      "breakdown": "Répartition des fonds",
+      "total_charge": "Montant total facturé",
+      "stripe_fee": "Frais de traitement Stripe",
+      "commission": "Commission MassageNOW",
+      "net_therapist": "Net pour le thérapeute",
+      "refund_btn": "Effectuer un remboursement",
+      "view_stripe": "Voir dans Stripe"
+    }
+  },
+  "settings": {
+    "title": "Paramètres du Système",
+    "subtitle": "Configurez les règles métier, les frais et l'accès à la plateforme.",
+    "nav_general": "Général",
+    "nav_financials": "Finances",
+    "nav_team": "Équipe Admin",
+    "nav_security": "Sécurité & Logs",
+    "unsaved_changes": "Vous avez des modifications non enregistrées.",
+    "discard": "Ignorer",
+    "save": "Enregistrer les modifications",
+    "general": {
+      "title": "État Opérationnel",
+      "guest_mode": "Navigation Mode Invité",
+      "guest_mode_sub": "Permettre aux utilisateurs de voir les thérapeutes sans être connectés.",
+      "maintenance_mode": "Mode Maintenance",
+      "maintenance_mode_sub": "Désactive l'accès aux applications mobiles pour tous les utilisateurs.",
+      "therapist_onboarding": "Inscription de Nouveaux Thérapeutes",
+      "therapist_onboarding_sub": "Mettre en pause les nouvelles demandes d'inscription au catalogue."
+    },
+    "financials": {
+      "title": "Règles Financières",
+      "commission_label": "Commission Plateforme Globale (%)",
+      "commission_sub": "Appliqué à toutes les réservations futures.",
+      "min_price_label": "Prix Minimum de Réservation",
+      "min_price_sub": "Empêche la création de services sous ce seuil."
+    },
+    "team": {
+      "title": "Gestion de l'Équipe",
+      "invite_btn": "Inviter un Admin",
+      "role_super": "Super Admin",
+      "role_support": "Agent Support"
+    }
+  },
+  "dashboard": {
+    "title": "Aperçu du système",
+    "welcome": "Aperçu en temps réel des performances de la plateforme MassageNOW et des opérations des thérapeutes.",
+    "live_feed": "Flux en direct : Mis à jour il y a 2m",
+    "stats": {
+      "revenue": "Revenu Total",
+      "therapists": "Thérapeutes Actifs",
+      "bookings": "Total des Réservations",
+      "growth": "Taux de Croissance",
+      "vs_last_30": "vs derniers 30 jours",
+      "qualified": "Pros qualifiés",
+      "successful": "Sessions réussies",
+      "monthly_avg": "Moyenne mensuelle"
+    },
+    "activity": {
+      "title": "Graphique d'activité de la plateforme",
+      "description": "La visualisation des pics de réservation quotidiens et de la disponibilité des thérapeutes sera affichée ici."
+    },
+    "alerts": {
+      "title": "Alertes Récentes",
+      "new_therapist": "Nouveau thérapeute inscrit"
+    }
+  },
+  "kyc": {
+    "title": "Vérification KYC & Conformité",
+    "subtitle": "Gérez les approbations des thérapeutes et les vérifications de documents.",
+    "pending_title": "KYC en attente",
+    "pending_description": "Il y a 12 thérapeutes en attente de vérification d'identité et de licence.",
+    "review_button": "Examiner maintenant",
+    "queue_title": "File d'attente de révision de conformité",
+    "filter_all": "Tout",
+    "filter_pending": "En attente (8)",
+    "filter_resubmit": "Attente de re-téléchargement",
+    "filter_approved": "Approuvé",
+    "table_name": "Nom du candidat",
+    "table_date": "Date de soumission",
+    "table_docs": "Documents fournis",
+    "table_status": "Statut",
+    "status_pending": "En attente",
+    "status_approved": "Approuvé",
+    "status_rejected": "Rejeté",
+    "status_resubmit": "À compléter",
+    "review_panel_title": "Révision de la demande",
+    "application_no": "Demande",
+    "liveness_check": "Vérification de présence",
+    "selfie_label": "Selfie en direct",
+    "id_face_label": "Visage sur l'ID",
+    "doc_viewer_title": "Visionneuse de documents",
+    "tab_id": "ID Gouvernemental",
+    "tab_license": "Licence de massage",
+    "approve_btn": "Approuver & Activer",
+    "request_changes_btn": "Demander des modifications",
+    "reject_btn": "Rejeter la demande",
+    "send_request": "Envoyer la demande",
+    "reason_placeholder": "Expliquez pourquoi le document est refusé (ex: ID flou)..."
+  }
+}

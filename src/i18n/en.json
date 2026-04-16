@@ -1,0 +1,46 @@
+{
+  "login": {
+    "title": "Secure Access",
+    "subtitle": "Identify yourself to proceed to the command center.",
+    "email_label": "Administrator Email",
+    "password_label": "Password",
+    "button": "Sign In to Dashboard",
+    "quote": "Excellence is not a skill. It is an attitude."
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "kyc": "KYC Verification",
+    "users": "User Management",
+    "payments": "Stripe Oversight",
+    "settings": "Settings",
+    "signout": "Sign Out"
+  },
+  "dashboard": {
+    "title": "System Overview",
+    "welcome": "Real-time insights into the MassageNOW platform performance and therapist operations.",
+    "live_feed": "Live Feed: Updated 2m ago",
+    "stats": {
+      "revenue": "Total Revenue",
+      "therapists": "Active Therapists",
+      "bookings": "Total Bookings",
+      "growth": "Growth Rate",
+      "vs_last_30": "vs last 30 days",
+      "qualified": "Qualified pros",
+      "successful": "Successful sessions",
+      "monthly_avg": "Monthly average"
+    },
+    "activity": {
+      "title": "Platform Activity Chart",
+      "description": "Visualization of daily booking spikes and therapist availability will be rendered here."
+    },
+    "alerts": {
+      "title": "Recent Alerts",
+      "new_therapist": "New therapist registered"
+    }
+  },
+  "kyc": {
+    "pending_title": "Pending KYC",
+    "pending_description": "There are 12 therapists waiting for identity and license verification.",
+    "review_button": "Review Now"
+  }
+}
