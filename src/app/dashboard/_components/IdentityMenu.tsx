@@ -1,17 +1,20 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useRouter } from "next/navigation";
 import { 
   Settings, 
   Users, 
   Moon, 
   LogOut, 
-  ShieldCheck, 
   ChevronRight,
-  Database
+  Database,
+  Loader2
 } from "lucide-react";
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { t } from "@/lib/i18n";
+import { auth } from "@/lib/firebase";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -23,7 +26,38 @@ interface IdentityMenuProps {
 }
 
 export const IdentityMenu = ({ isOpen, onClose }: IdentityMenuProps) => {
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   if (!isOpen) return null;
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+
+      // 1. Call our API to clear the HTTP-Only session cookie
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Logout failed on server.");
+      }
+
+      // 2. Sign out from Firebase Client SDK
+      await auth.signOut();
+
+      // 3. Close the menu and redirect
+      onClose();
+      router.push("/login");
+      router.refresh(); // Ensure the server-side layout re-evaluates the session
+
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <>
@@ -43,23 +77,33 @@ export const IdentityMenu = ({ isOpen, onClose }: IdentityMenuProps) => {
             admin@massagenow.com
           </p>
           <span className="inline-flex items-center px-3 py-1 bg-darkSage text-white text-[10px] font-bold uppercase tracking-widest rounded-full">
-            Super Administrator
+            {t('header.role_badge')}
           </span>
         </div>
 
         {/* Menu Items */}
         <div className="p-2 space-y-1">
-          <MenuItem icon={Settings} label="Platform Settings" />
-          <MenuItem icon={Users} label="Manage Admin Access" />
-          <MenuItem icon={Database} label="Audit Logs" />
-          <MenuItem icon={Moon} label="Toggle Dark Mode" showBadge />
+          <MenuItem icon={Settings} label={t('header.settings')} />
+          <MenuItem icon={Users} label={t('header.manage_access')} />
+          <MenuItem icon={Database} label={t('header.audit_logs')} />
+          <MenuItem icon={Moon} label={t('header.dark_mode')} showBadge />
         </div>
 
         {/* Logout Footer */}
         <div className="p-2 border-t border-lightSage bg-creamWhite/20">
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[#BC5353] hover:bg-[#BC5353]/10 transition-all font-bold text-sm group">
-            <LogOut size={18} className="group-hover:-translate-x-0.5 transition-transform" />
-            Secure Logout
+          <button 
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-error hover:bg-error/10 transition-all font-bold text-sm group disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoggingOut ? (
+              <Loader2 size={18} className="animate-spin mx-auto" />
+            ) : (
+              <>
+                <LogOut size={18} className="group-hover:-translate-x-0.5 transition-transform" />
+                {t('header.logout')}
+              </>
+            )}
           </button>
         </div>
       </div>
