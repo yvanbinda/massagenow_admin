@@ -22,10 +22,10 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const MOCK_TRANSACTIONS = [
-  { id: 'txn_8f92k', patient: 'Alice Morel', therapist: 'Sarah Chen', amount: '150,00 €', fee: '30,00 €', status: 'succeeded', date: '12 Nov 2024' },
-  { id: 'txn_7g31m', patient: 'Julien Petit', therapist: 'Mark Wilson', amount: '120,00 €', fee: '24,00 €', status: 'succeeded', date: '11 Nov 2024' },
-  { id: 'txn_9h45p', patient: 'Sophie Martin', therapist: 'Sarah Chen', amount: '150,00 €', fee: '30,00 €', status: 'refunded', date: '10 Nov 2024' },
-  { id: 'txn_2j18q', patient: 'Thomas L.', therapist: 'James Taylor', amount: '90,00 €', fee: '18,00 €', status: 'succeeded', date: '09 Nov 2024' },
+  { id: 'txn_8f92k', patient: 'Alice Morel', therapist: 'Sarah Chen', amount: '150,00 $', fee: '30,00 $', status: 'succeeded', date: '12 Nov 2024' },
+  { id: 'txn_7g31m', patient: 'Julien Petit', therapist: 'Mark Wilson', amount: '120,00 $', fee: '24,00 $', status: 'succeeded', date: '11 Nov 2024' },
+  { id: 'txn_9h45p', patient: 'Sophie Martin', therapist: 'Sarah Chen', amount: '150,00 $', fee: '30,00 $', status: 'refunded', date: '10 Nov 2024' },
+  { id: 'txn_2j18q', patient: 'Thomas L.', therapist: 'James Taylor', amount: '90,00 $', fee: '18,00 $', status: 'succeeded', date: '09 Nov 2024' },
 ];
 
 export default function PaymentsPage() {
@@ -57,7 +57,7 @@ export default function PaymentsPage() {
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard 
           title={t('finance.gross_volume')}
-          value="45 850 €" 
+          value="45 850 $" 
           icon={Wallet} 
           bgColor="bg-mediumSage/10" 
           borderColor="border-mediumSage/20"
@@ -67,7 +67,7 @@ export default function PaymentsPage() {
         />
         <MetricCard 
           title={t('finance.platform_revenue')}
-          value="9 170 €" 
+          value="9 170 $" 
           icon={TrendingUp} 
           bgColor="bg-darkSage/10" 
           borderColor="border-darkSage/20"
@@ -77,7 +77,7 @@ export default function PaymentsPage() {
         />
         <MetricCard 
           title={t('finance.pending_payouts')}
-          value="3 240 €" 
+          value="3 240 $" 
           icon={Clock} 
           bgColor="bg-sageGreen/10" 
           borderColor="border-sageGreen/20"

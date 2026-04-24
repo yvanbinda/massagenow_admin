@@ -35,18 +35,18 @@ export default function TherapistDetailPage({ params }: { params: Promise<{ id: 
     location: "Paris + 20km",
     memberSince: "12 Mars 2024",
     matchScore: 94,
-    revenue: "14 500 €",
-    commission: "2 175 €",
+    revenue: "14 500 $",
+    commission: "2 175 $",
     stripeStatus: "active",
     services: [
-      { name: "Deep Tissue Recovery", duration: "60 mins", price: "120 €" },
-      { name: "Massage Suédois", duration: "90 mins", price: "150 €" },
-      { name: "Réflexologie", duration: "45 mins", price: "85 €" },
+      { name: "Deep Tissue Recovery", duration: "60 mins", price: "120 $" },
+      { name: "Massage Suédois", duration: "90 mins", price: "150 $" },
+      { name: "Réflexologie", duration: "45 mins", price: "85 $" },
     ],
     recentPayouts: [
-      { date: "15 Nov 2024", amount: "1 240 €", status: "completed" },
-      { date: "08 Nov 2024", amount: "980 €", status: "completed" },
-      { date: "01 Nov 2024", amount: "1 150 €", status: "completed" },
+      { date: "15 Nov 2024", amount: "1 240 $", status: "completed" },
+      { date: "08 Nov 2024", amount: "980 $", status: "completed" },
+      { date: "01 Nov 2024", amount: "1 150 $", status: "completed" },
     ]
   };
 

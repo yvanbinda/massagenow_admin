@@ -12,6 +12,16 @@ export class UserRepository extends BaseRepository {
     return snapshot.docs.map(doc => this.serialize<User>(doc)!).filter(Boolean);
   }
 
+  /**
+   * Fetches only users who are not certified professionals (Clients/Users side).
+   */
+  async getUncertifiedUsers(): Promise<User[]> {
+    const snapshot = await this.usersCollection
+      .where('isCertified', '==', false)
+      .get();
+    return snapshot.docs.map(doc => this.serialize<User>(doc)!).filter(Boolean);
+  }
+
   async getUserById(id: string): Promise<User | null> {
     const doc = await this.usersCollection.doc(id).get();
     return this.serialize<User>(doc);
@@ -26,7 +36,6 @@ export class UserRepository extends BaseRepository {
 
   // --- 2. KYC / VERIFICATION REQUESTS ---
   async getAllKycRequests(): Promise<VerificationRequest[]> {
-    // Fetch all requests sorted by submission date to support all filters
     const snapshot = await this.verificationCollection
       .orderBy('submittedAt', 'desc')
       .get();

@@ -50,9 +50,9 @@
   },
   "users": {
     "title": "Annuaire de la plateforme",
-    "subtitle": "Gérez les prestataires et les clients de l'écosystème MassageNOW.",
+    "subtitle": "Gérez les prestataires et les utilisateurs de l'écosystème MassageNOW.",
     "tab_therapists": "Thérapeutes",
-    "tab_patients": "Patients",
+    "tab_patients": "Utilisateurs",
     "status_active": "Actif",
     "status_suspended": "Suspendu",
     "status_flagged": "Signalé",
@@ -62,7 +62,7 @@
       "match_health": "Santé Match",
       "earnings": "Revenus totaux",
       "status": "Statut",
-      "patient": "Patient",
+      "patient": "Utilisateur",
       "ltv": "Valeur Vie (LTV)",
       "sessions": "Sessions",
       "last_active": "Dernière activité"
@@ -70,7 +70,7 @@
     "detail": {
       "back": "Retour à l'annuaire",
       "profile_title": "Profil Thérapeute",
-      "profile_title_patient": "Profil Patient",
+      "profile_title_patient": "Profil Utilisateur",
       "member_since": "Membre depuis",
       "kyc_verified": "Vérifié KYC",
       "danger_zone": "Zone de Danger",
@@ -112,7 +112,7 @@
     },
     "table": {
       "txn_id": "ID Transaction",
-      "patient": "Patient",
+      "patient": "Utilisateur",
       "therapist": "Thérapeute",
       "amount": "Montant Brut",
       "fee": "Frais Plateforme",

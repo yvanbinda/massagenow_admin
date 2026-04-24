@@ -1,6 +1,6 @@
 import { UserRepository } from '@/repositories/user.repository';
 import { BookingRepository } from '@/repositories/booking.repository';
-import { VerificationRequest, TherapistProfile } from '@/types/models';
+import { VerificationRequest, TherapistProfile, User } from '@/types/models';
 
 export class AdminService {
   private userRepo = new UserRepository();
@@ -57,18 +57,14 @@ export class AdminService {
   }
 
   /**
-   * Fetches ALL KYC requests directly from the verification snapshot collection.
+   * Fetches pending KYC requests directly from the verification snapshot collection.
    * Joins with the User collection to retrieve real names and emails.
    */
   async getTherapistsForKyc() {
-    // 1. Fetch ALL verification requests to support all filters (All, Pending, Approved, etc.)
-    const requests = await this.userRepo.getAllKycRequests();
-    
-    // 2. Fetch all users to perform the join
+    const requests = await this.userRepo.getPendingKycRequests();
     const users = await this.userRepo.getAllUsers();
     
     return requests.map(req => {
-      // Find the associated core user data
       const user = users.find(u => u.id === req.id);
 
       return {
@@ -94,10 +90,32 @@ export class AdminService {
   }
 
   /**
-   * Fetches live active therapists for the directory.
+   * Fetches all therapists for the directory with user details.
    */
-  async getActiveTherapists() {
-    return await this.userRepo.getActiveTherapists();
+  async getTherapistsForDirectory() {
+    const [profiles, users] = await Promise.all([
+      this.userRepo.getActiveTherapists(),
+      this.userRepo.getAllUsers()
+    ]);
+
+    return profiles.map(profile => {
+      const user = users.find(u => u.id === profile.id);
+      return {
+        ...profile,
+        name: user?.name || 'Inconnu',
+        email: user?.email || 'N/A',
+        avatarUrl: user?.avatarUrl || profile.avatarUrl
+      };
+    });
+  }
+
+  /**
+   * Fetches all users (clients) for the directory who are not certified professionals.
+   */
+  async getPatientsForDirectory() {
+    // Corrected to use the existing method in UserRepository
+    const patients = await this.userRepo.getUncertifiedUsers();
+    return patients;
   }
 }
 
