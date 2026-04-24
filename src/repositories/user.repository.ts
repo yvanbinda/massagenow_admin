@@ -25,6 +25,15 @@ export class UserRepository extends BaseRepository {
   }
 
   // --- 2. KYC / VERIFICATION REQUESTS ---
+  async getAllKycRequests(): Promise<VerificationRequest[]> {
+    // Fetch all requests sorted by submission date to support all filters
+    const snapshot = await this.verificationCollection
+      .orderBy('submittedAt', 'desc')
+      .get();
+    
+    return snapshot.docs.map(doc => this.serialize<VerificationRequest>(doc)!).filter(Boolean);
+  }
+
   async getPendingKycRequests(): Promise<VerificationRequest[]> {
     const snapshot = await this.verificationCollection
       .where('status', '==', 'pending')

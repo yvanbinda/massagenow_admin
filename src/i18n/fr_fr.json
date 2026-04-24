@@ -193,7 +193,7 @@
     "review_button": "Examiner maintenant",
     "queue_title": "File d'attente de révision de conformité",
     "filter_all": "Tout",
-    "filter_pending": "En attente (8)",
+    "filter_pending": "En attente",
     "filter_resubmit": "Attente de re-téléchargement",
     "filter_approved": "Approuvé",
     "table_name": "Nom du candidat",

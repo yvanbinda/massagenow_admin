@@ -57,15 +57,14 @@ export class AdminService {
   }
 
   /**
-   * Fetches pending KYC requests directly from the verification snapshot collection.
+   * Fetches ALL KYC requests directly from the verification snapshot collection.
    * Joins with the User collection to retrieve real names and emails.
    */
   async getTherapistsForKyc() {
-    // 1. Fetch all pending verification requests
-    const requests = await this.userRepo.getPendingKycRequests();
+    // 1. Fetch ALL verification requests to support all filters (All, Pending, Approved, etc.)
+    const requests = await this.userRepo.getAllKycRequests();
     
     // 2. Fetch all users to perform the join
-    // NOTE: For performance in high-scale systems, we could fetch only specific UIDs
     const users = await this.userRepo.getAllUsers();
     
     return requests.map(req => {
@@ -80,7 +79,6 @@ export class AdminService {
         bio: req.bio,
         experienceLevel: req.experienceLevel,
         avatarUrl: req.avatarUrl,
-        // Fallback to 'Inconnu' if user doc not found
         email: user?.email || req.email || 'N/A', 
         name: user?.name || req.name || 'Inconnu', 
         date: req.submittedAt,

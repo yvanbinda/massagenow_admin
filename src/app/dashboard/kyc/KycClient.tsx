@@ -15,10 +15,17 @@ export default function KycClient({ initialData }: KycClientProps) {
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedRecord, setSelectedRecord] = useState<any | null>(null);
 
-  // Filter logic
+  // Filter logic to handle 'pending', 'approved', 'rejected'
   const filteredData = initialData.filter(record => {
     if (activeFilter === 'all') return true;
-    return record.status === activeFilter;
+    
+    // Normalize status for filtering
+    const status = record.status;
+    if (activeFilter === 'pending') return status === 'pending';
+    if (activeFilter === 'approved') return status === 'approved';
+    if (activeFilter === 'resubmit') return status === 'rejected' || status === 'resubmit';
+    
+    return true;
   });
 
   const pendingCount = initialData.filter(r => r.status === 'pending').length;
