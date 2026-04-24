@@ -1,5 +1,6 @@
 import * as functions from 'firebase-functions/v1';
 import * as admin from 'firebase-admin';
+import emailjs from '@emailjs/nodejs';
 
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -9,32 +10,58 @@ const db = admin.firestore();
 const messaging = admin.messaging();
 
 // ----------------------------------------------------------------------
-// TRIGGER 1: New Application Submitted -> Notify Admin
+// TRIGGER 1: New Application Submitted -> Notify Admin (In-App + Email)
 // ----------------------------------------------------------------------
 export const onVerificationRequested = functions.firestore
   .document('verification_requests/{uid}')
   .onCreate(async (snap, context) => {
     const data = snap.data();
+    const uid = context.params.uid;
+    const professionalName = data.professionalName || data.legalName || 'Un nouveau thérapeute';
     
-    // 1. Save to Admin's In-App Inbox
+    // 1. Save to Admin's In-App Inbox (Firestore)
     await db.collection('notifications').add({
       recipientId: 'super_admin',
       type: 'kyc_submitted',
       title: 'Nouvelle demande KYC',
-      body: `${data.professionalName || 'Un nouveau thérapeute'} a soumis une demande de certification.`,
+      body: `${professionalName} a soumis une demande de certification.`,
       isRead: false,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       metadata: {
-        therapistId: context.params.uid
+        therapistId: uid
       }
     });
 
-    console.log(`[NOTIF] Application notification created for Super Admin (User: ${context.params.uid})`);
+    // 2. Fire the EmailJS Notification to the Super Admin
+    try {
+      const templateParams = {
+        admin_email: 'yvan@massagenow.ca', // Target admin email
+        therapist_name: professionalName,
+        user_uid: uid,
+        submission_time: new Date().toLocaleString('fr-FR'),
+        dashboard_link: `https://admin.massagenow.ca/dashboard/kyc` 
+      };
+
+      // Values are pulled directly from process.env (populated by functions/.env)
+      await emailjs.send(
+        process.env.EMAILJS_SERVICE_ID!,
+        process.env.EMAILJS_TEMPLATE_ID!,
+        templateParams,
+        {
+          publicKey: process.env.EMAILJS_PUBLIC_KEY!,
+          privateKey: process.env.EMAILJS_PRIVATE_KEY!,
+        }
+      );
+
+      console.log(`[EMAIL] EmailJS notification sent successfully for ${professionalName}`);
+    } catch (error) {
+      console.error('[EMAIL] EmailJS failed to send:', error);
+    }
   });
 
 
 // ----------------------------------------------------------------------
-// TRIGGER 2: Application Reviewed -> Notify Therapist
+// TRIGGER 2: Application Reviewed -> Notify Therapist (In-App + Push)
 // ----------------------------------------------------------------------
 export const onVerificationReviewed = functions.firestore
   .document('verification_requests/{uid}')
@@ -43,7 +70,6 @@ export const onVerificationReviewed = functions.firestore
     const after = change.after.data();
     const uid = context.params.uid;
 
-    // Only proceed if the status actually changed
     if (before.status === after.status) return;
 
     let title = '';
@@ -59,10 +85,9 @@ export const onVerificationReviewed = functions.firestore
       body = after.rejectionReason || 'Malheureusement, nous avons besoin de plus d\'informations. Veuillez vérifier vos documents.';
       type = 'kyc_rejected';
     } else {
-      return; // Do nothing for other status changes
+      return;
     }
 
-    // 1. Save to Therapist's In-App Inbox
     await db.collection('notifications').add({
       recipientId: uid,
       type: type,
@@ -72,16 +97,12 @@ export const onVerificationReviewed = functions.firestore
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    // 2. Send Mobile Push Notification (FCM)
     const userDoc = await db.collection('users').doc(uid).get();
     const fcmTokens = userDoc.data()?.fcmTokens || [];
 
     if (fcmTokens.length > 0) {
       const payload = {
-        notification: {
-          title: title,
-          body: body,
-        },
+        notification: { title, body },
         data: {
           click_action: 'FLUTTER_NOTIFICATION_CLICK',
           route: '/therapist/dashboard',
@@ -90,8 +111,7 @@ export const onVerificationReviewed = functions.firestore
       };
 
       try {
-        const response = await messaging.sendToDevice(fcmTokens, payload);
-        console.log(`[NOTIF] FCM sent to ${uid}: ${response.successCount} success, ${response.failureCount} failure`);
+        await messaging.sendToDevice(fcmTokens, payload);
       } catch (error) {
         console.error(`[NOTIF] FCM failed for ${uid}:`, error);
       }
