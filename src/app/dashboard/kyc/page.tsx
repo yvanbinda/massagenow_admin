@@ -1,64 +1,15 @@
-"use client";
+import React from 'react';
+import { adminService } from "@/services/admin.service";
+import KycClient from "./KycClient";
 
-import React, { useState } from 'react';
-import { KycFilters } from "./_components/KycFilters";
-import { KycTable } from "./_components/KycTable";
-import { KycReviewPanel } from "./_components/KycReviewPanel";
-import { t } from "@/lib/i18n";
-import { ShieldCheck, Info } from "lucide-react";
+// Force dynamic rendering to ensure real-time data from Firestore
+export const dynamic = 'force-dynamic';
 
-export default function KycPage() {
-  const [activeFilter, setActiveFilter] = useState('pending');
-  const [selectedRecord, setSelectedRecord] = useState<any | null>(null);
+export default async function KycPage() {
+  // Fetch real data from Firestore via our Service Layer
+  const therapists = await adminService.getTherapistsForKyc();
 
   return (
-    <div className="space-y-8 pb-12">
-      {/* Header Section */}
-      <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-darkSage/10 rounded-lg">
-              <ShieldCheck size={24} className="text-darkSage" />
-            </div>
-            <h1 className="text-4xl font-bold font-abeezee text-charcoal tracking-tight">
-              {t('kyc.title')}
-            </h1>
-          </div>
-          <p className="text-mediumSage text-lg font-abeezee leading-relaxed max-w-2xl">
-            {t('kyc.subtitle')}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border border-lightSage shadow-sm">
-          <Info size={18} className="text-warning" />
-          <span className="text-sm font-abeezee font-semibold text-charcoal">
-            8 {t('kyc.status_pending')}
-          </span>
-        </div>
-      </section>
-
-      {/* Triage Center Controls */}
-      <section>
-        <KycFilters 
-          activeFilter={activeFilter} 
-          onChange={setActiveFilter} 
-        />
-        
-        <KycTable 
-          onRowClick={(record) => setSelectedRecord(record)} 
-        />
-      </section>
-
-      {/* Master-Detail Review Panel */}
-      <KycReviewPanel 
-        record={selectedRecord} 
-        onClose={() => setSelectedRecord(null)} 
-      />
-
-      {/* Footer Info */}
-      <p className="text-center text-xs text-mediumSage font-abeezee opacity-60 mt-12">
-        Système de vérification MassageNOW v1.0 • Sécurisé par chiffrement de bout en bout
-      </p>
-    </div>
+    <KycClient initialData={therapists} />
   );
 }

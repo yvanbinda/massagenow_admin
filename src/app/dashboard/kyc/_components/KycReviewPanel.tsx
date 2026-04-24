@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from "next/navigation";
 import { 
   X, 
   User, 
@@ -9,18 +10,35 @@ import {
   Download, 
   CheckCircle2, 
   AlertCircle,
-  ChevronRight,
-  MessageSquare
+  MessageSquare,
+  Loader2,
+  ShieldCheck
 } from "lucide-react";
 import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/Button";
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 interface KycRecord {
   id: string;
   name: string;
   email: string;
+  professionalName: string;
+  bio: string;
+  experienceLevel: string;
+  specialties: string[];
+  operationMode: string;
   date: string;
-  docs: ('id' | 'license')[];
+  docs: {
+    idFront: string;
+    idBack: string;
+    selfie: string;
+    license?: string | null;
+  };
   status: 'pending' | 'approved' | 'rejected' | 'resubmit';
 }
 
@@ -30,21 +48,63 @@ interface KycReviewPanelProps {
 }
 
 export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
-  const [activeTab, setActiveTab] = useState<'id' | 'license'>('id');
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<'idFront' | 'idBack' | 'selfie' | 'license'>('idFront');
   const [showRequestForm, setShowRequestForm] = useState(false);
+  const [showConfirmModal, setShowConfirmConfirmModal] = useState(false);
   const [reason, setReason] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   if (!record) return null;
 
+  const handleApprove = async () => {
+    try {
+      setIsProcessing(true);
+      const response = await fetch('/api/admin/kyc/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: record.id, email: record.email }),
+      });
+
+      if (!response.ok) throw new Error('Approval failed');
+
+      setShowConfirmConfirmModal(false);
+      onClose();
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      alert("Erreur lors de l'approbation.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!reason) return;
+    try {
+      setIsProcessing(true);
+      const response = await fetch('/api/admin/kyc/reject', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: record.id, reason }),
+      });
+
+      if (!response.ok) throw new Error('Rejection failed');
+
+      onClose();
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      alert("Erreur lors du rejet.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <>
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-charcoal/30 backdrop-blur-sm z-[100] transition-opacity" 
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 bg-charcoal/30 backdrop-blur-sm z-[100] transition-opacity" onClick={onClose} />
       
-      {/* Slide-out Panel */}
       <div className="fixed inset-y-0 right-0 w-full sm:max-w-[600px] bg-white z-[110] shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
         {/* Header */}
         <div className="px-8 py-6 border-b border-lightSage flex items-center justify-between bg-creamWhite/20">
@@ -56,40 +116,41 @@ export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
               {t('kyc.application_no')} #{record.id}
             </p>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-lightSage rounded-full transition-colors text-mediumSage"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-lightSage rounded-full transition-colors text-mediumSage">
             <X size={20} />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-8 space-y-10">
-          {/* Section 1: Applicant Context */}
+          {/* Section 1: Professional Context */}
           <section className="space-y-6">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-lightSage flex items-center justify-center text-darkSage border-2 border-white shadow-sm">
-                <User size={28} />
+              <div className="w-14 h-14 rounded-full bg-lightSage flex items-center justify-center text-darkSage border-2 border-white shadow-sm overflow-hidden">
+                {record.docs.selfie ? (
+                   <img src={record.docs.selfie} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                   <User size={28} />
+                )}
               </div>
               <div>
-                <h3 className="text-lg font-bold text-charcoal font-abeezee">{record.name}</h3>
-                <p className="text-sm text-mediumSage font-abeezee">{record.email}</p>
+                <h3 className="text-lg font-bold text-charcoal font-abeezee">{record.professionalName}</h3>
+                <p className="text-sm text-mediumSage font-abeezee">{record.name} • {record.email}</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <span className="text-[10px] font-bold text-mediumSage uppercase tracking-widest">{t('kyc.selfie_label')}</span>
-                <div className="aspect-square rounded-xl bg-lightSage/50 border border-lightSage flex items-center justify-center relative overflow-hidden group">
-                  <div className="text-[10px] text-mediumSage/40 font-bold uppercase tracking-tighter">Selfie Image</div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <span className="text-[10px] font-bold text-mediumSage uppercase tracking-widest">{t('kyc.id_face_label')}</span>
-                <div className="aspect-square rounded-xl bg-lightSage/50 border border-lightSage flex items-center justify-center relative overflow-hidden group">
-                  <div className="text-[10px] text-mediumSage/40 font-bold uppercase tracking-tighter">ID Photo</div>
-                </div>
-              </div>
+            <div className="bg-creamWhite/50 rounded-2xl p-5 border border-lightSage space-y-4">
+               <div>
+                  <span className="text-[10px] font-bold text-mediumSage uppercase tracking-widest">Spécialités</span>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                     {record.specialties?.map((s, i) => (
+                       <span key={i} className="px-3 py-1 bg-white border border-lightSage rounded-full text-[10px] font-bold text-darkSage">{s}</span>
+                     ))}
+                  </div>
+               </div>
+               <div>
+                  <span className="text-[10px] font-bold text-mediumSage uppercase tracking-widest">Bio</span>
+                  <p className="text-xs text-secondaryCharcoal leading-relaxed mt-1 font-abeezee italic">"{record.bio}"</p>
+               </div>
             </div>
           </section>
 
@@ -99,34 +160,20 @@ export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
               <h3 className="text-sm font-bold text-charcoal font-abeezee uppercase tracking-wider">
                 {t('kyc.doc_viewer_title')}
               </h3>
-              <div className="flex bg-lightSage/50 p-1 rounded-lg border border-lightSage">
-                <button 
-                  onClick={() => setActiveTab('id')}
-                  className={cn(
-                    "px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all",
-                    activeTab === 'id' ? "bg-white text-darkSage shadow-sm" : "text-mediumSage hover:text-darkSage"
-                  )}
-                >
-                  {t('kyc.tab_id')}
-                </button>
-                <button 
-                  onClick={() => setActiveTab('license')}
-                  className={cn(
-                    "px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all",
-                    activeTab === 'license' ? "bg-white text-darkSage shadow-sm" : "text-mediumSage hover:text-darkSage"
-                  )}
-                >
-                  {t('kyc.tab_license')}
-                </button>
+              <div className="flex bg-lightSage/50 p-1 rounded-lg border border-lightSage overflow-x-auto scrollbar-hide">
+                <TabBtn active={activeTab === 'idFront'} onClick={() => setActiveTab('idFront')} label="ID Recto" />
+                <TabBtn active={activeTab === 'idBack'} onClick={() => setActiveTab('idBack')} label="ID Verso" />
+                <TabBtn active={activeTab === 'selfie'} onClick={() => setActiveTab('selfie')} label="Selfie" />
+                {record.docs.license && <TabBtn active={activeTab === 'license'} onClick={() => setActiveTab('license')} label="Licence" />}
               </div>
             </div>
 
-            <div className="relative bg-charcoal rounded-2xl h-[340px] flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
-              <div className="text-white/20 font-bold font-abeezee text-sm tracking-widest uppercase italic">
-                {activeTab === 'id' ? 'Government ID Image' : 'Professional License Image'}
-              </div>
-              
-              {/* Floating Controls */}
+            <div className="relative bg-charcoal rounded-2xl h-[400px] flex items-center justify-center overflow-hidden border-4 border-white shadow-lg group">
+              <img 
+                src={(record.docs as any)[activeTab]} 
+                alt="Verification Document" 
+                className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+              />
               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-charcoal/80 backdrop-blur-md border border-white/10 p-2 rounded-xl">
                 <ControlButton icon={Maximize2} />
                 <ControlButton icon={RotateCw} />
@@ -137,79 +184,91 @@ export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
           </section>
         </div>
 
-        {/* Section 3: Decision Action Bar */}
+        {/* Section 3: Action Bar */}
         <div className="p-6 border-t border-lightSage bg-white space-y-4 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]">
-          {showRequestForm && (
+          {showRequestForm ? (
             <div className="animate-in slide-in-from-bottom-2 duration-300 space-y-3 pb-2">
-              <div className="flex items-center gap-2 text-warning">
-                <MessageSquare size={16} />
-                <span className="text-xs font-bold font-abeezee uppercase tracking-widest">
-                  {t('kyc.request_changes_btn')}
-                </span>
-              </div>
               <textarea 
-                className="w-full bg-creamWhite border border-warning/20 rounded-xl p-4 text-sm font-abeezee text-charcoal placeholder:text-mediumSage/40 outline-none focus:ring-2 focus:ring-warning/20 transition-all min-h-[100px]"
+                className="w-full bg-creamWhite border border-warning/20 rounded-xl p-4 text-sm font-abeezee text-charcoal placeholder:text-mediumSage/40 outline-none focus:ring-2 focus:ring-warning/20 min-h-[100px]"
                 placeholder={t('kyc.reason_placeholder')}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               />
               <div className="flex gap-2">
                 <Button 
-                  className="flex-1 bg-warning text-white hover:bg-warning/90"
-                  onClick={() => setShowRequestForm(false)}
+                  className="flex-1 bg-warning text-white hover:bg-warning/90" 
+                  onClick={handleReject}
+                  isLoading={isProcessing}
+                  disabled={!reason}
                 >
                   {t('kyc.send_request')}
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  className="px-4"
-                  onClick={() => setShowRequestForm(false)}
-                >
-                  Annuler
-                </Button>
+                <Button variant="ghost" onClick={() => setShowRequestForm(false)}>Annuler</Button>
               </div>
             </div>
-          )}
-
-          {!showRequestForm && (
-            <div className="flex flex-col sm:flex-row gap-3">
+          ) : (
+            <div className="flex gap-3">
               <button 
+                onClick={() => setShowConfirmConfirmModal(true)}
+                disabled={isProcessing}
                 className="flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-darkSage text-white font-bold font-abeezee hover:bg-darkSage/90 transition-all shadow-lg shadow-darkSage/10"
               >
                 <CheckCircle2 size={18} />
                 {t('kyc.approve_btn')}
               </button>
               
-              <div className="flex gap-2 flex-1 sm:flex-none">
-                <button 
-                  onClick={() => setShowRequestForm(true)}
-                  className="flex-1 sm:flex-none py-4 px-6 rounded-xl border border-warning text-warning font-bold font-abeezee hover:bg-warning/5 transition-all"
-                >
-                  {t('kyc.request_changes_btn')}
-                </button>
-                <button 
-                  className="p-4 rounded-xl text-error hover:bg-error/5 transition-all"
-                  title={t('kyc.reject_btn')}
-                >
-                  <AlertCircle size={22} />
-                </button>
-              </div>
+              <button 
+                onClick={() => setShowRequestForm(true)}
+                disabled={isProcessing}
+                className="py-4 px-6 rounded-xl border border-warning text-warning font-bold font-abeezee hover:bg-warning/5 transition-all"
+              >
+                {t('kyc.request_changes_btn')}
+              </button>
             </div>
           )}
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-charcoal/60 backdrop-blur-sm" onClick={() => setShowConfirmConfirmModal(false)} />
+          <div className="relative bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200 text-center">
+             <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <ShieldCheck size={40} className="text-success" />
+             </div>
+             <h3 className="text-2xl font-bold text-charcoal font-abeezee mb-2">Confirmer l'approbation</h3>
+             <p className="text-mediumSage text-sm font-abeezee leading-relaxed mb-8">
+               Êtes-vous sûr de vouloir approuver <strong>{record.professionalName}</strong> ? Cette action activera son profil sur la marketplace.
+             </p>
+             <div className="flex flex-col gap-3">
+                <Button 
+                  className="w-full bg-darkSage py-4 h-auto text-lg" 
+                  onClick={handleApprove}
+                  isLoading={isProcessing}
+                >
+                   Oui, Approuver & Activer
+                </Button>
+                <button 
+                  onClick={() => setShowConfirmConfirmModal(false)}
+                  className="text-mediumSage font-bold text-sm uppercase tracking-widest hover:text-charcoal transition-colors py-2"
+                >
+                   Annuler
+                </button>
+             </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
 
-const ControlButton = ({ icon: Icon }: { icon: any }) => (
-  <button className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all">
-    <Icon size={18} />
+const TabBtn = ({ active, onClick, label }: { active: boolean, onClick: () => void, label: string }) => (
+  <button onClick={onClick} className={cn("px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap", active ? "bg-white text-darkSage shadow-sm" : "text-mediumSage hover:text-darkSage")}>
+    {label}
   </button>
 );
 
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+const ControlButton = ({ icon: Icon }: { icon: any }) => (
+  <button className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all"><Icon size={18} /></button>
+);

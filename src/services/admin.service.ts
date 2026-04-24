@@ -1,6 +1,6 @@
 import { UserRepository } from '@/repositories/user.repository';
 import { BookingRepository } from '@/repositories/booking.repository';
-import { User, TherapistProfile, Booking } from '@/types/models';
+import { VerificationRequest, TherapistProfile } from '@/types/models';
 
 export class AdminService {
   private userRepo = new UserRepository();
@@ -12,7 +12,7 @@ export class AdminService {
   async getPlatformOverview() {
     const [users, therapists, bookings] = await Promise.all([
       this.userRepo.getAllUsers(),
-      this.userRepo.getTherapistProfiles(),
+      this.userRepo.getActiveTherapists(),
       this.bookingRepo.getAllBookings(),
     ]);
 
@@ -31,18 +31,76 @@ export class AdminService {
 
   /**
    * Approves a therapist's KYC and activates their profile.
+   * This handles the 3-step atomic update.
    */
-  async approveTherapist(id: string): Promise<void> {
-    await this.userRepo.updateProfileStatus(id, 'active');
-    // In production, we would also trigger a Firebase Cloud Function 
-    // here to send a congratulatory email via SendGrid/Postmark.
+  async approveTherapist(id: string, email: string): Promise<void> {
+    // 1. Update verification request status
+    await this.userRepo.updateVerificationStatus(id, 'approved');
+    
+    // 2. Create/Activate live therapist profile
+    await this.userRepo.createOrUpdateTherapistProfile(id, {
+      status: 'active',
+      isOnline: false,
+      rating: 5.0,
+      reviewCount: 0,
+    });
+
+    // 3. Flag user as certified
+    await this.userRepo.updateUserCertification(id, true);
   }
 
-  async getTherapistsByStatus(status: TherapistProfile['status']): Promise<TherapistProfile[]> {
-    const all = await this.userRepo.getTherapistProfiles();
-    return all.filter(t => t.status === status);
+  /**
+   * Rejects a therapist's KYC.
+   */
+  async rejectTherapist(id: string, reason: string): Promise<void> {
+    await this.userRepo.updateVerificationStatus(id, 'rejected', reason);
+  }
+
+  /**
+   * Fetches pending KYC requests directly from the verification snapshot collection.
+   * Joins with the User collection to retrieve real names and emails.
+   */
+  async getTherapistsForKyc() {
+    // 1. Fetch all pending verification requests
+    const requests = await this.userRepo.getPendingKycRequests();
+    
+    // 2. Fetch all users to perform the join
+    // NOTE: For performance in high-scale systems, we could fetch only specific UIDs
+    const users = await this.userRepo.getAllUsers();
+    
+    return requests.map(req => {
+      // Find the associated core user data
+      const user = users.find(u => u.id === req.id);
+
+      return {
+        id: req.id,
+        professionalName: req.professionalName,
+        operationMode: req.operationMode,
+        specialties: req.specialties,
+        bio: req.bio,
+        experienceLevel: req.experienceLevel,
+        avatarUrl: req.avatarUrl,
+        // Fallback to 'Inconnu' if user doc not found
+        email: user?.email || req.email || 'N/A', 
+        name: user?.name || req.name || 'Inconnu', 
+        date: req.submittedAt,
+        status: req.status,
+        docs: {
+          idFront: req.idFrontUrl,
+          idBack: req.idBackUrl,
+          selfie: req.selfieUrl,
+          license: req.licenseUrl,
+        },
+      };
+    });
+  }
+
+  /**
+   * Fetches live active therapists for the directory.
+   */
+  async getActiveTherapists() {
+    return await this.userRepo.getActiveTherapists();
   }
 }
 
-// Export a singleton instance for use across Next.js Server Components
 export const adminService = new AdminService();

@@ -13,6 +13,7 @@ export interface User {
   lastActiveMode: 'client' | 'therapist';
   createdAt: string; // ISO String
   updatedAt?: string | null;
+  hasPendingApplication?: boolean;
 }
 
 // --- 2. THERAPIST PROFILE MODEL ---
@@ -33,11 +34,42 @@ export interface TherapistProfile {
   reviewCount: number;
   travelSettings: TravelSettings;
   isOnline: boolean;
+  
+  // Profile Data
+  professionalName?: string | null;
+  specialties?: string[];
+  experienceLevel?: string | null;
+  avatarUrl?: string | null;
+  
   createdAt: string;
   updatedAt?: string | null;
 }
 
-// --- 3. SERVICE MODEL ---
+// --- 3. KYC VERIFICATION REQUEST MODEL ---
+export interface VerificationRequest {
+  id: string; // The uid
+  professionalName: string;
+  operationMode: 'Mobile' | 'At Studio' | 'Both';
+  specialties: string[];
+  bio: string;
+  experienceLevel: string;
+  avatarUrl: string;
+  email: string; // From user document join
+  name: string; // From user document join
+  
+  // Documents
+  idFrontUrl: string;
+  idBackUrl: string;
+  selfieUrl: string;
+  licenseUrl?: string | null;
+  
+  status: 'pending' | 'approved' | 'rejected' | 'resubmit';
+  submittedAt: string;
+  reviewedAt?: string | null;
+  rejectionReason?: string | null;
+}
+
+// --- 4. SERVICE MODEL ---
 export interface Service {
   id: string;
   therapistId: string;
@@ -51,7 +83,7 @@ export interface Service {
   updatedAt?: string | null;
 }
 
-// --- 4. BOOKING MODEL (The Escrow Ledger) ---
+// --- 5. BOOKING MODEL (The Escrow Ledger) ---
 export interface Booking {
   id: string;
   clientId: string;
@@ -85,7 +117,7 @@ export interface Booking {
   updatedAt?: string | null;
 }
 
-// --- 5. REVIEW MODEL ---
+// --- 6. REVIEW MODEL ---
 export interface Review {
   id: string;
   therapistId: string;
@@ -101,7 +133,7 @@ export interface Review {
   updatedAt?: string | null;
 }
 
-// --- 6. STORY MODEL ---
+// --- 7. STORY MODEL ---
 export interface Story {
   id: string;
   therapistId: string;
