@@ -1,6 +1,18 @@
 import { BookingStatus, LocationType, PaymentStatus, ProfileStatus } from "./enums";
 
-// --- 1. USER MODEL ---
+// --- 1. NOTIFICATION MODEL ---
+export interface NotificationModel {
+  id: string;
+  recipientId: string; // The uid of the Therapist, or 'super_admin'
+  type: 'kyc_submitted' | 'kyc_approved' | 'kyc_rejected';
+  title: string;
+  body: string;
+  isRead: boolean;
+  metadata?: any; // e.g., { applicationId: "123" } for deep linking
+  createdAt: string; // ISO String
+}
+
+// --- 2. USER MODEL ---
 export interface User {
   id: string; // The uid
   email: string;
@@ -16,7 +28,7 @@ export interface User {
   hasPendingApplication?: boolean;
 }
 
-// --- 2. THERAPIST PROFILE MODEL ---
+// --- 3. THERAPIST PROFILE MODEL ---
 export interface TravelSettings {
   acceptsAtHome: boolean;
   maxRadiusKm: number;
@@ -45,7 +57,7 @@ export interface TherapistProfile {
   updatedAt?: string | null;
 }
 
-// --- 3. KYC VERIFICATION REQUEST MODEL ---
+// --- 4. KYC VERIFICATION REQUEST MODEL ---
 export interface VerificationRequest {
   id: string; // The uid
   professionalName: string;
@@ -69,7 +81,7 @@ export interface VerificationRequest {
   rejectionReason?: string | null;
 }
 
-// --- 4. SERVICE MODEL ---
+// --- 5. SERVICE MODEL ---
 export interface Service {
   id: string;
   therapistId: string;
@@ -83,7 +95,7 @@ export interface Service {
   updatedAt?: string | null;
 }
 
-// --- 5. BOOKING MODEL (The Escrow Ledger) ---
+// --- 6. BOOKING MODEL (The Escrow Ledger) ---
 export interface Booking {
   id: string;
   clientId: string;
@@ -117,7 +129,7 @@ export interface Booking {
   updatedAt?: string | null;
 }
 
-// --- 6. REVIEW MODEL ---
+// --- 7. REVIEW MODEL ---
 export interface Review {
   id: string;
   therapistId: string;
@@ -133,7 +145,7 @@ export interface Review {
   updatedAt?: string | null;
 }
 
-// --- 7. STORY MODEL ---
+// --- 8. STORY MODEL ---
 export interface Story {
   id: string;
   therapistId: string;
