@@ -5,7 +5,11 @@
     "email_label": "Email de l'administrateur",
     "password_label": "Mot de passe",
     "button": "Se connecter au tableau de bord",
-    "quote": "L'excellence n'est pas une compétence. C'est une attitude."
+    "quote": "L'excellence n'est pas une compétence. C'est une attitude.",
+    "error_invalid_credentials": "Identifiants invalides. Veuillez réessayer.",
+    "error_generic": "Une erreur est survenue lors de la connexion.",
+    "error_unauthorized": "Accès refusé. Autorisation insuffisante.",
+    "error_server": "Le serveur de sécurité est indisponible."
   },
   "sidebar": {
     "dashboard": "Tableau de bord",
