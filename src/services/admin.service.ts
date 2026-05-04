@@ -1,6 +1,6 @@
 import { UserRepository } from '@/repositories/user.repository';
 import { BookingRepository } from '@/repositories/booking.repository';
-import { VerificationRequest, TherapistProfile, User } from '@/types/models';
+import { VerificationRequest, TherapistProfile, User, Booking, Service } from '@/types/models';
 
 export class AdminService {
   private userRepo = new UserRepository();
@@ -31,21 +31,15 @@ export class AdminService {
 
   /**
    * Approves a therapist's KYC and activates their profile.
-   * This handles the 3-step atomic update.
    */
   async approveTherapist(id: string, email: string): Promise<void> {
-    // 1. Update verification request status
     await this.userRepo.updateVerificationStatus(id, 'approved');
-    
-    // 2. Create/Activate live therapist profile
     await this.userRepo.createOrUpdateTherapistProfile(id, {
       status: 'active',
       isOnline: false,
       rating: 5.0,
       reviewCount: 0,
     });
-
-    // 3. Flag user as certified
     await this.userRepo.updateUserCertification(id, true);
   }
 
@@ -57,8 +51,7 @@ export class AdminService {
   }
 
   /**
-   * Fetches pending KYC requests directly from the verification snapshot collection.
-   * Joins with the User collection to retrieve real names and emails.
+   * Fetches pending KYC requests joined with User data.
    */
   async getTherapistsForKyc() {
     const requests = await this.userRepo.getPendingKycRequests();
@@ -66,7 +59,6 @@ export class AdminService {
     
     return requests.map(req => {
       const user = users.find(u => u.id === req.id);
-
       return {
         id: req.id,
         professionalName: req.professionalName,
@@ -110,12 +102,76 @@ export class AdminService {
   }
 
   /**
-   * Fetches all users (clients) for the directory who are not certified professionals.
+   * Fetches all users for the directory.
+   * As requested, this includes everyone (Clients and converted Therapists).
    */
   async getPatientsForDirectory() {
-    // Corrected to use the existing method in UserRepository
-    const patients = await this.userRepo.getUncertifiedUsers();
-    return patients;
+    const users = await this.userRepo.getDirectoryUsers();
+    return users;
+  }
+
+  /**
+   * Fetches all bookings with associated user details for the financial ledger.
+   */
+  async getAllTransactions() {
+    const [bookings, users] = await Promise.all([
+      this.bookingRepo.getAllBookings(),
+      this.userRepo.getAllUsers()
+    ]);
+
+    return bookings.map(booking => {
+      const client = users.find(u => u.id === booking.clientId);
+      const therapist = users.find(u => u.id === booking.therapistId);
+      
+      return {
+        ...booking,
+        clientName: client?.name || 'Client Inconnu',
+        therapistName: therapist?.name || 'Thérapeute Inconnu'
+      };
+    });
+  }
+
+  /**
+   * Fetches full detail for a specific therapist.
+   */
+  async getTherapistDetail(id: string) {
+    const [profile, user, bookings, services] = await Promise.all([
+      this.userRepo.getTherapistProfile(id),
+      this.userRepo.getUserById(id),
+      this.bookingRepo.getBookingsByTherapist(id),
+      this.userRepo.getTherapistServices(id)
+    ]);
+
+    if (!profile || !user) return null;
+
+    return {
+      ...profile,
+      name: user.name,
+      email: user.email,
+      phone: user.phoneNumber || 'Non renseigné',
+      memberSince: user.createdAt,
+      bookings: bookings,
+      services: services,
+      totalRevenue: bookings.reduce((sum, b) => sum + (b.priceSnapshot || 0), 0),
+      platformComm: bookings.reduce((sum, b) => sum + (b.platformFee || 0), 0),
+    };
+  }
+
+  /**
+   * Fetches full detail for a specific user.
+   */
+  async getPatientDetail(id: string) {
+    const user = await this.userRepo.getUserById(id);
+    if (!user) return null;
+
+    const snapshot = await this.bookingRepo.getAllBookings(); 
+    const userBookings = snapshot.filter(b => b.clientId === id);
+
+    return {
+      ...user,
+      bookings: userBookings,
+      totalSpent: userBookings.reduce((sum, b) => sum + (b.priceSnapshot || 0), 0),
+    };
   }
 }
 

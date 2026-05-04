@@ -1,4 +1,14 @@
 {
+  "common": {
+    "currency": "CAD",
+    "ago": "Il y a {n}h",
+    "just_now": "À l'instant",
+    "none": "Aucun",
+    "never": "Jamais",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "export": "Exporter"
+  },
   "login": {
     "title": "Accès Sécurisé",
     "subtitle": "Identifiez-vous pour accéder au centre de commande.",
@@ -95,7 +105,18 @@
       "payment_vault": "Coffre-fort de Paiement",
       "promo_codes": "Codes Promos",
       "ltv_label": "Valeur à vie (LTV)",
-      "total_spent": "Total dépensé sur MassageNOW"
+      "total_spent": "Total dépensé sur MassageNOW",
+      "payouts_recent": "Derniers Virements",
+      "virement_completed": "Complété",
+      "avis_title": "Avis & Signalements",
+      "no_avis": "Aucun avis récent.",
+      "no_tickets": "Aucun ticket de support actif.",
+      "no_reservations": "Aucune réservation trouvée.",
+      "timeline_title": "Timeline de Réservation",
+      "stripe_verified": "Vérifié par Stripe",
+      "stripe_active": "Compte Actif",
+      "stripe_restricted": "Action requise",
+      "stripe_not_connected": "Non Connecté"
     }
   },
   "finance": {
@@ -116,7 +137,10 @@
       "therapist": "Thérapeute",
       "amount": "Montant Brut",
       "fee": "Frais Plateforme",
-      "status": "Statut"
+      "status": "Statut",
+      "all_status": "Tous les statuts",
+      "success": "Succès",
+      "refunded": "Remboursé"
     },
     "receipt": {
       "title": "Reçu de Transaction",
@@ -126,7 +150,9 @@
       "commission": "Commission MassageNOW",
       "net_therapist": "Net pour le thérapeute",
       "refund_btn": "Effectuer un remboursement",
-      "view_stripe": "Voir dans Stripe"
+      "view_stripe": "Voir dans Stripe",
+      "calculating": "Calcul en cours...",
+      "3ds_authenticated": "Authentifié 3DS"
     }
   },
   "settings": {
@@ -159,7 +185,8 @@
       "title": "Gestion de l'Équipe",
       "invite_btn": "Inviter un Admin",
       "role_super": "Super Admin",
-      "role_support": "Agent Support"
+      "role_support": "Agent Support",
+      "you": "Vous"
     }
   },
   "dashboard": {
@@ -167,14 +194,17 @@
     "welcome": "Aperçu en temps réel des performances de la plateforme MassageNOW et des opérations des thérapeutes.",
     "live_feed": "Flux en direct : Mis à jour il y a 2m",
     "stats": {
-      "revenue": "Revenu Total",
-      "therapists": "Thérapeutes Actifs",
+      "revenue": "Revenu Brut",
+      "therapists": "Pros Actifs",
       "bookings": "Total des Réservations",
       "growth": "Taux de Croissance",
-      "vs_last_30": "vs derniers 30 jours",
-      "qualified": "Pros qualifiés",
+      "vs_last_30": "Volume Total",
+      "qualified": "Thérapeutes certifiés",
       "successful": "Sessions réussies",
-      "monthly_avg": "Moyenne mensuelle"
+      "monthly_avg": "Moyenne mensuelle",
+      "active_users": "Utilisateurs actifs",
+      "action_required": "Action requise",
+      "platform_profit": "Profit net généré"
     },
     "activity": {
       "title": "Graphique d'activité de la plateforme",
@@ -182,14 +212,16 @@
     },
     "alerts": {
       "title": "Alertes Récentes",
-      "new_therapist": "Nouveau thérapeute inscrit"
+      "new_therapist": "Nouveau thérapeute inscrit",
+      "kyc_uploaded": "Document KYC téléchargé",
+      "payout_failed": "Échec du virement : Stripe Connect"
     }
   },
   "kyc": {
     "title": "Vérification KYC & Conformité",
     "subtitle": "Gérez les approbations des thérapeutes et les vérifications de documents.",
     "pending_title": "KYC en attente",
-    "pending_description": "Il y a 12 thérapeutes en attente de vérification d'identité et de licence.",
+    "pending_description": "Il y a {n} thérapeutes en attente de vérification d'identité et de licence.",
     "review_button": "Examiner maintenant",
     "queue_title": "File d'attente de révision de conformité",
     "filter_all": "Tout",
@@ -216,6 +248,18 @@
     "request_changes_btn": "Demander des modifications",
     "reject_btn": "Rejeter la demande",
     "send_request": "Envoyer la demande",
-    "reason_placeholder": "Expliquez pourquoi le document est refusé (ex: ID flou)..."
+    "reason_placeholder": "Expliquez pourquoi le document est refusé (ex: ID flou)...",
+    "no_requests": "Aucune demande trouvée dans cette catégorie.",
+    "specialties_label": "Spécialités",
+    "bio_label": "Bio",
+    "confirm_title": "Confirmer l'approbation",
+    "confirm_body": "Êtes-vous sûr de vouloir approuver {name} ? Cette action activera son profil sur la marketplace.",
+    "confirm_btn": "Oui, Approuver & Activer",
+    "id_recto": "ID Recto",
+    "id_verso": "ID Verso",
+    "selfie_tab": "Selfie",
+    "license_tab": "Licence",
+    "error_approve": "Erreur lors de l'approbation.",
+    "error_reject": "Erreur lors du rejet."
   }
 }

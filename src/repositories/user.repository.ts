@@ -1,5 +1,5 @@
 import { BaseRepository } from './base.repository';
-import { User, TherapistProfile, VerificationRequest } from '@/types/models';
+import { User, TherapistProfile, VerificationRequest, Service } from '@/types/models';
 
 export class UserRepository extends BaseRepository {
   private usersCollection = this.db.collection('users');
@@ -7,19 +7,24 @@ export class UserRepository extends BaseRepository {
   private therapistsCollection = this.db.collection('therapists');
 
   // --- 1. USER DATA ---
+  
+  /**
+   * Fetches the global identity for all accounts.
+   */
   async getAllUsers(): Promise<User[]> {
     const snapshot = await this.usersCollection.get();
     return snapshot.docs.map(doc => this.serialize<User>(doc)!).filter(Boolean);
   }
 
   /**
-   * Fetches only users who are not certified professionals (Clients/Users side).
+   * Fetches all users from the system to be displayed in the directory.
+   * This includes everyone (standard users and those who have been certified as therapists).
    */
-  async getUncertifiedUsers(): Promise<User[]> {
-    const snapshot = await this.usersCollection
-      .where('isCertified', '==', false)
-      .get();
-    return snapshot.docs.map(doc => this.serialize<User>(doc)!).filter(Boolean);
+  async getDirectoryUsers(): Promise<User[]> {
+    const snapshot = await this.usersCollection.get();
+    return snapshot.docs
+      .map(doc => this.serialize<User>(doc)!)
+      .filter(u => u && u.id !== 'system_admin'); 
   }
 
   async getUserById(id: string): Promise<User | null> {
@@ -35,6 +40,7 @@ export class UserRepository extends BaseRepository {
   }
 
   // --- 2. KYC / VERIFICATION REQUESTS ---
+  
   async getAllKycRequests(): Promise<VerificationRequest[]> {
     const snapshot = await this.verificationCollection
       .orderBy('submittedAt', 'desc')
@@ -62,6 +68,7 @@ export class UserRepository extends BaseRepository {
   }
 
   // --- 3. LIVE THERAPIST PROFILES ---
+  
   async getActiveTherapists(): Promise<TherapistProfile[]> {
     const snapshot = await this.therapistsCollection
       .where('status', '==', 'active')
@@ -73,6 +80,11 @@ export class UserRepository extends BaseRepository {
   async getTherapistProfile(id: string): Promise<TherapistProfile | null> {
     const doc = await this.therapistsCollection.doc(id).get();
     return this.serialize<TherapistProfile>(doc);
+  }
+
+  async getTherapistServices(id: string): Promise<Service[]> {
+    const snapshot = await this.therapistsCollection.doc(id).collection('services').get();
+    return snapshot.docs.map(doc => this.serialize<Service>(doc)!).filter(Boolean);
   }
 
   async createOrUpdateTherapistProfile(id: string, data: Partial<TherapistProfile>): Promise<void> {

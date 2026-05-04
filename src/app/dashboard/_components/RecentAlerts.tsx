@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card } from "@/components/ui/Card";
+import { t } from "@/lib/i18n";
 
 interface AlertItemProps {
   title: string;
@@ -19,15 +20,15 @@ const AlertItem = ({ title, time, id }: AlertItemProps) => (
 
 export const RecentAlerts = () => {
   const alerts = [
-    { id: '8235', title: 'New therapist registered', time: '2 hours ago' },
-    { id: '8236', title: 'KYC Document Uploaded', time: '4 hours ago' },
-    { id: '8237', title: 'Payout failed: Stripe Connect', time: '5 hours ago' },
+    { id: '8235', title: t('dashboard.alerts.new_therapist'), time: 'Il y a 2 heures' },
+    { id: '8236', title: t('dashboard.alerts.kyc_uploaded'), time: 'Il y a 4 heures' },
+    { id: '8237', title: t('dashboard.alerts.payout_failed'), time: 'Il y a 5 heures' },
   ];
 
   return (
-    <Card className="bg-white">
+    <Card className="bg-white shadow-none">
       <h4 className="font-bold font-abeezee text-charcoal mb-4 border-b border-brokenWhite pb-4">
-        Recent Alerts
+        {t('dashboard.alerts.title')}
       </h4>
       <div className="space-y-4">
         {alerts.map((alert) => (
