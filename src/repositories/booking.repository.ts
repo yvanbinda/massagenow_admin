@@ -16,4 +16,12 @@ export class BookingRepository extends BaseRepository {
       .get();
     return snapshot.docs.map(doc => this.serialize<Booking>(doc)!).filter(Boolean);
   }
+
+  async getBookingsByClient(clientId: string): Promise<Booking[]> {
+    const snapshot = await this.collection
+      .where('clientId', '==', clientId)
+      .orderBy('createdAt', 'desc')
+      .get();
+    return snapshot.docs.map(doc => this.serialize<Booking>(doc)!).filter(Boolean);
+  }
 }

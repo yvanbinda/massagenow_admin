@@ -18,13 +18,36 @@ export const DynamicHeader = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAlertsOpen, setIsAlertsOpen] = useState(false);
   const [isIdentityOpen, setIsIdentityOpen] = useState(false);
+  const [hasUnread, setHasUnread] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    // Check for unread notifications
+    const checkNotifications = async () => {
+      try {
+        const response = await fetch('/api/admin/notifications');
+        if (response.ok) {
+          const data = await response.json();
+          // Check if any notification in the latest list is unread
+          setHasUnread(data.some((n: any) => !n.isRead));
+        }
+      } catch (error) {
+        console.error('Error checking notifications:', error);
+      }
+    };
+
+    checkNotifications();
+    // Refresh unread status every 60 seconds
+    const interval = setInterval(checkNotifications, 60000);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearInterval(interval);
+    };
   }, []);
 
   return (
@@ -71,7 +94,11 @@ export const DynamicHeader = () => {
             )}
           >
             <Bell size={22} className={cn("transition-colors", isAlertsOpen ? "text-darkSage" : "text-secondaryCharcoal group-hover:text-darkSage")} />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full ring-2 ring-white animate-pulse" />
+            
+            {/* Conditional Red Dot */}
+            {hasUnread && (
+              <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full ring-2 ring-white animate-pulse" />
+            )}
           </button>
           
           <div className="flex items-center gap-3 pl-2 border-l border-lightSage">

@@ -24,6 +24,7 @@ interface TherapistTableProps {
 
 export const TherapistTable = ({ data }: TherapistTableProps) => {
   const router = useRouter();
+  const currency = t('common.currency');
 
   return (
     <div className="bg-white border border-lightSage rounded-2xl overflow-hidden shadow-sm shadow-charcoal/5">
@@ -67,7 +68,7 @@ export const TherapistTable = ({ data }: TherapistTableProps) => {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm font-bold text-darkSage font-abeezee">
-                  {item.earnings || (item.totalRevenue ? `${item.totalRevenue} €` : "0 €")}
+                  {item.totalRevenue ? `${item.totalRevenue.toLocaleString()} ${currency}` : `0 ${currency}`}
                 </td>
                 <td className="px-6 py-4">
                   <Badge variant={item.status === 'active' ? 'success' : 'error'}>

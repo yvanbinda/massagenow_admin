@@ -14,6 +14,7 @@ import { RecentAlerts } from "./_components/RecentAlerts";
 import { KycPendingBox } from "./_components/KycPendingBox";
 import { WelcomeSection } from "./_components/WelcomeSection";
 import { t } from "@/lib/i18n";
+import { NotificationModel } from "@/types/models";
 
 interface DashboardClientProps {
   stats: {
@@ -23,6 +24,8 @@ interface DashboardClientProps {
     totalRevenue: number;
     platformComm: number;
     pendingKycCount: number;
+    chartData: { name: string, count: number }[];
+    recentNotifications: NotificationModel[];
   };
 }
 
@@ -95,11 +98,11 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
       {/* Main Content Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <ActivityChart />
+          <ActivityChart data={stats.chartData} />
         </div>
         <div className="space-y-6">
-           <KycPendingBox />
-           <RecentAlerts />
+           <KycPendingBox count={stats.pendingKycCount} />
+           <RecentAlerts notifications={stats.recentNotifications} />
         </div>
       </div>
     </div>

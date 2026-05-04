@@ -1,39 +1,52 @@
+"use client";
+
 import React from 'react';
 import { Card } from "@/components/ui/Card";
 import { t } from "@/lib/i18n";
+import { NotificationModel } from "@/types/models";
+import { useRouter } from "next/navigation";
 
-interface AlertItemProps {
-  title: string;
-  time: string;
-  id: string;
+interface RecentAlertsProps {
+  notifications?: NotificationModel[];
 }
 
-const AlertItem = ({ title, time, id }: AlertItemProps) => (
-  <div className="flex gap-4 items-start group cursor-pointer">
-    <div className="w-2 h-2 rounded-full bg-sageGreen mt-1.5 shrink-0 group-hover:scale-125 transition-transform" />
-    <div>
-      <p className="text-sm font-abeezee font-semibold text-charcoal">{title}</p>
-      <p className="text-xs font-abeezee text-mediumSage">{time} • ID: {id}</p>
-    </div>
-  </div>
-);
-
-export const RecentAlerts = () => {
-  const alerts = [
-    { id: '8235', title: t('dashboard.alerts.new_therapist'), time: 'Il y a 2 heures' },
-    { id: '8236', title: t('dashboard.alerts.kyc_uploaded'), time: 'Il y a 4 heures' },
-    { id: '8237', title: t('dashboard.alerts.payout_failed'), time: 'Il y a 5 heures' },
-  ];
-
+const AlertItem = ({ notification }: { notification: NotificationModel }) => {
+  const router = useRouter();
+  
   return (
-    <Card className="bg-white shadow-none">
-      <h4 className="font-bold font-abeezee text-charcoal mb-4 border-b border-brokenWhite pb-4">
+    <div 
+      className="flex gap-4 items-start group cursor-pointer hover:bg-lightSage/10 p-2 -mx-2 rounded-xl transition-all"
+      onClick={() => router.push('/dashboard/notifications')}
+    >
+      <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 transition-transform group-hover:scale-125 ${
+        notification.isRead ? 'bg-lightSage' : 'bg-darkSage'
+      }`} />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-abeezee font-bold text-charcoal truncate">{notification.title}</p>
+        <p className="text-[10px] font-abeezee text-mediumSage">
+          {new Date(notification.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} • ID: {notification.id.substring(0, 4)}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export const RecentAlerts = ({ notifications = [] }: RecentAlertsProps) => {
+  return (
+    <Card className="bg-white shadow-none border-lightSage">
+      <h4 className="font-bold font-abeezee text-charcoal mb-4 border-b border-lightSage pb-4 text-sm uppercase tracking-wider">
         {t('dashboard.alerts.title')}
       </h4>
-      <div className="space-y-4">
-        {alerts.map((alert) => (
-          <AlertItem key={alert.id} {...alert} />
-        ))}
+      <div className="space-y-3 max-h-[220px] overflow-y-auto pr-2 scrollbar-hide">
+        {notifications.length > 0 ? (
+          notifications.map((notif) => (
+            <AlertItem key={notif.id} notification={notif} />
+          ))
+        ) : (
+          <p className="text-center py-6 text-xs text-mediumSage italic">
+            Aucune alerte récente.
+          </p>
+        )}
       </div>
     </Card>
   );

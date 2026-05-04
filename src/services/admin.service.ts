@@ -1,23 +1,29 @@
 import { UserRepository } from '@/repositories/user.repository';
 import { BookingRepository } from '@/repositories/booking.repository';
-import { VerificationRequest, TherapistProfile, User, Booking, Service } from '@/types/models';
+import { NotificationRepository } from '@/repositories/notification.repository';
+import { VerificationRequest, TherapistProfile, User, Booking, Service, NotificationModel } from '@/types/models';
 
 export class AdminService {
   private userRepo = new UserRepository();
   private bookingRepo = new BookingRepository();
+  private notificationRepo = new NotificationRepository();
 
   /**
    * Fetches a consolidated overview of the platform health.
    */
   async getPlatformOverview() {
-    const [users, therapists, bookings] = await Promise.all([
+    const [users, therapists, bookings, notifications] = await Promise.all([
       this.userRepo.getAllUsers(),
       this.userRepo.getActiveTherapists(),
       this.bookingRepo.getAllBookings(),
+      this.notificationRepo.getAdminNotifications(5) // Fetch 5 most recent
     ]);
 
     const totalRevenue = bookings.reduce((sum, b) => sum + (b.priceSnapshot || 0), 0);
     const platformComm = bookings.reduce((sum, b) => sum + (b.platformFee || 0), 0);
+
+    // Calculate chart data (last 7 days)
+    const chartData = this.calculateActivityStats(bookings);
 
     return {
       userCount: users.length,
@@ -26,7 +32,33 @@ export class AdminService {
       totalRevenue,
       platformComm,
       recentBookings: bookings.slice(0, 10),
+      recentNotifications: notifications,
+      chartData
     };
+  }
+
+  /**
+   * Helper to aggregate bookings by date for the activity chart.
+   */
+  private calculateActivityStats(bookings: Booking[]) {
+    const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    const now = new Date();
+    const stats = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      const dayLabel = days[date.getDay()];
+
+      const count = bookings.filter(b => 
+        b.createdAt && b.createdAt.startsWith(dateStr)
+      ).length;
+
+      stats.push({ name: dayLabel, count });
+    }
+
+    return stats;
   }
 
   /**
@@ -103,7 +135,7 @@ export class AdminService {
 
   /**
    * Fetches all users for the directory.
-   * As requested, this includes everyone (Clients and converted Therapists).
+   * Includes everyone (Clients and converted Therapists).
    */
   async getPatientsForDirectory() {
     const users = await this.userRepo.getDirectoryUsers();

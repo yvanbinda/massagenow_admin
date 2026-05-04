@@ -27,6 +27,16 @@ export class UserRepository extends BaseRepository {
       .filter(u => u && u.id !== 'system_admin'); 
   }
 
+  /**
+   * Fetches only users who are not certified professionals.
+   */
+  async getUncertifiedUsers(): Promise<User[]> {
+    const snapshot = await this.usersCollection
+      .where('isCertified', '==', false)
+      .get();
+    return snapshot.docs.map(doc => this.serialize<User>(doc)!).filter(Boolean);
+  }
+
   async getUserById(id: string): Promise<User | null> {
     const doc = await this.usersCollection.doc(id).get();
     return this.serialize<User>(doc);

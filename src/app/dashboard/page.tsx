@@ -6,8 +6,9 @@ import DashboardClient from "./DashboardClient";
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  // 1. Fetch live metrics from Firestore via our Service Layer
+  // 1. Fetch live metrics and notifications from Firestore via our Service Layer
   const stats = await adminService.getPlatformOverview();
+  const kycTherapists = await adminService.getTherapistsForKyc();
 
   // 2. Map to the specific props expected by the dashboard view
   const dashboardData = {
@@ -16,8 +17,9 @@ export default async function DashboardPage() {
     bookingCount: stats.bookingCount,
     totalRevenue: stats.totalRevenue,
     platformComm: stats.platformComm,
-    // Add pending KYC specifically for the home view alerts
-    pendingKycCount: (await adminService.getTherapistsForKyc()).length,
+    pendingKycCount: kycTherapists.length,
+    chartData: stats.chartData,
+    recentNotifications: stats.recentNotifications,
   };
 
   return (
