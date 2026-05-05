@@ -1,28 +1,28 @@
 import { UserRepository } from '@/repositories/user.repository';
 import { BookingRepository } from '@/repositories/booking.repository';
 import { NotificationRepository } from '@/repositories/notification.repository';
-import { VerificationRequest, TherapistProfile, User, Booking, Service, NotificationModel } from '@/types/models';
+import { AuditRepository } from '@/repositories/audit.repository';
+import { ReviewRepository } from '@/repositories/review.repository';
+import { VerificationRequest, TherapistProfile, User, Booking, Service, NotificationModel, AuditLog, Review } from '@/types/models';
 
 export class AdminService {
   private userRepo = new UserRepository();
   private bookingRepo = new BookingRepository();
   private notificationRepo = new NotificationRepository();
+  private auditRepo = new AuditRepository();
+  private reviewRepo = new ReviewRepository();
 
-  /**
-   * Fetches a consolidated overview of the platform health.
-   */
   async getPlatformOverview() {
     const [users, therapists, bookings, notifications] = await Promise.all([
       this.userRepo.getAllUsers(),
       this.userRepo.getActiveTherapists(),
       this.bookingRepo.getAllBookings(),
-      this.notificationRepo.getAdminNotifications(5) // Fetch 5 most recent
+      this.notificationRepo.getAdminNotifications(5)
     ]);
 
     const totalRevenue = bookings.reduce((sum, b) => sum + (b.priceSnapshot || 0), 0);
     const platformComm = bookings.reduce((sum, b) => sum + (b.platformFee || 0), 0);
 
-    // Calculate chart data (last 7 days)
     const chartData = this.calculateActivityStats(bookings);
 
     return {
@@ -37,34 +37,22 @@ export class AdminService {
     };
   }
 
-  /**
-   * Helper to aggregate bookings by date for the activity chart.
-   */
   private calculateActivityStats(bookings: Booking[]) {
     const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
     const now = new Date();
     const stats = [];
-
     for (let i = 6; i >= 0; i--) {
       const date = new Date(now);
       date.setDate(now.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
       const dayLabel = days[date.getDay()];
-
-      const count = bookings.filter(b => 
-        b.createdAt && b.createdAt.startsWith(dateStr)
-      ).length;
-
+      const count = bookings.filter(b => b.createdAt && b.createdAt.startsWith(dateStr)).length;
       stats.push({ name: dayLabel, count });
     }
-
     return stats;
   }
 
-  /**
-   * Approves a therapist's KYC and activates their profile.
-   */
-  async approveTherapist(id: string, email: string): Promise<void> {
+  async approveTherapist(id: string, email: string, admin: { id: string, name: string }): Promise<void> {
     await this.userRepo.updateVerificationStatus(id, 'approved');
     await this.userRepo.createOrUpdateTherapistProfile(id, {
       status: 'active',
@@ -73,22 +61,34 @@ export class AdminService {
       reviewCount: 0,
     });
     await this.userRepo.updateUserCertification(id, true);
+    await this.auditRepo.recordAction({
+      adminId: admin.id,
+      adminName: admin.name,
+      action: 'approve_therapist',
+      targetId: id,
+      targetName: email,
+      details: `Approbation du thérapeute ${email}`,
+      createdAt: new Date().toISOString()
+    });
   }
 
-  /**
-   * Rejects a therapist's KYC.
-   */
-  async rejectTherapist(id: string, reason: string): Promise<void> {
+  async rejectTherapist(id: string, reason: string, admin: { id: string, name: string }): Promise<void> {
+    const request = await this.userRepo.getUserById(id);
     await this.userRepo.updateVerificationStatus(id, 'rejected', reason);
+    await this.auditRepo.recordAction({
+      adminId: admin.id,
+      adminName: admin.name,
+      action: 'reject_therapist',
+      targetId: id,
+      targetName: request?.email || 'Inconnu',
+      details: `Rejet du KYC pour ${request?.email || id}. Raison: ${reason}`,
+      createdAt: new Date().toISOString()
+    });
   }
 
-  /**
-   * Fetches pending KYC requests joined with User data.
-   */
   async getTherapistsForKyc() {
     const requests = await this.userRepo.getPendingKycRequests();
     const users = await this.userRepo.getAllUsers();
-    
     return requests.map(req => {
       const user = users.find(u => u.id === req.id);
       return {
@@ -113,15 +113,11 @@ export class AdminService {
     });
   }
 
-  /**
-   * Fetches all therapists for the directory with user details.
-   */
   async getTherapistsForDirectory() {
     const [profiles, users] = await Promise.all([
       this.userRepo.getActiveTherapists(),
       this.userRepo.getAllUsers()
     ]);
-
     return profiles.map(profile => {
       const user = users.find(u => u.id === profile.id);
       return {
@@ -133,28 +129,18 @@ export class AdminService {
     });
   }
 
-  /**
-   * Fetches all users for the directory.
-   * Includes everyone (Clients and converted Therapists).
-   */
   async getPatientsForDirectory() {
-    const users = await this.userRepo.getDirectoryUsers();
-    return users;
+    return await this.userRepo.getDirectoryUsers();
   }
 
-  /**
-   * Fetches all bookings with associated user details for the financial ledger.
-   */
   async getAllTransactions() {
     const [bookings, users] = await Promise.all([
       this.bookingRepo.getAllBookings(),
       this.userRepo.getAllUsers()
     ]);
-
     return bookings.map(booking => {
       const client = users.find(u => u.id === booking.clientId);
       const therapist = users.find(u => u.id === booking.therapistId);
-      
       return {
         ...booking,
         clientName: client?.name || 'Client Inconnu',
@@ -163,18 +149,33 @@ export class AdminService {
     });
   }
 
-  /**
-   * Fetches full detail for a specific therapist.
-   */
   async getTherapistDetail(id: string) {
-    const [profile, user, bookings, services] = await Promise.all([
+    const [profile, user, bookings, services, reviews, allUsers] = await Promise.all([
       this.userRepo.getTherapistProfile(id),
       this.userRepo.getUserById(id),
       this.bookingRepo.getBookingsByTherapist(id),
-      this.userRepo.getTherapistServices(id)
+      this.userRepo.getTherapistServices(id),
+      this.reviewRepo.getReviewsByTherapist(id),
+      this.userRepo.getAllUsers()
     ]);
 
     if (!profile || !user) return null;
+
+    // Join client names for bookings
+    const enrichedBookings = bookings.map(b => ({
+      ...b,
+      clientName: allUsers.find(u => u.id === b.clientId)?.name || 'Inconnu'
+    }));
+
+    // Join authors for reviews
+    const enrichedReviews = reviews.map(r => {
+      const author = allUsers.find(u => u.id === r.clientId);
+      return {
+        ...r,
+        reviewerName: author?.name || r.reviewerName,
+        reviewerAvatarUrl: author?.avatarUrl || r.reviewerAvatarUrl
+      };
+    });
 
     return {
       ...profile,
@@ -182,28 +183,40 @@ export class AdminService {
       email: user.email,
       phone: user.phoneNumber || 'Non renseigné',
       memberSince: user.createdAt,
-      bookings: bookings,
+      bookings: enrichedBookings,
       services: services,
+      reviews: enrichedReviews,
       totalRevenue: bookings.reduce((sum, b) => sum + (b.priceSnapshot || 0), 0),
       platformComm: bookings.reduce((sum, b) => sum + (b.platformFee || 0), 0),
     };
   }
 
-  /**
-   * Fetches full detail for a specific user.
-   */
   async getPatientDetail(id: string) {
-    const user = await this.userRepo.getUserById(id);
+    const [user, bookings, reviews, allUsers] = await Promise.all([
+      this.userRepo.getUserById(id),
+      this.bookingRepo.getBookingsByClient(id),
+      this.reviewRepo.getReviewsByClient(id),
+      this.userRepo.getAllUsers()
+    ]);
+
     if (!user) return null;
 
-    const snapshot = await this.bookingRepo.getAllBookings(); 
-    const userBookings = snapshot.filter(b => b.clientId === id);
+    // Join therapist names for bookings
+    const enrichedBookings = bookings.map(b => ({
+      ...b,
+      therapistName: allUsers.find(u => u.id === b.therapistId)?.name || 'Inconnu'
+    }));
 
     return {
       ...user,
-      bookings: userBookings,
-      totalSpent: userBookings.reduce((sum, b) => sum + (b.priceSnapshot || 0), 0),
+      bookings: enrichedBookings,
+      reviews: reviews,
+      totalSpent: bookings.reduce((sum, b) => sum + (b.priceSnapshot || 0), 0),
     };
+  }
+
+  async getAuditLogs() {
+    return await this.auditRepo.getLatestLogs();
   }
 }
 

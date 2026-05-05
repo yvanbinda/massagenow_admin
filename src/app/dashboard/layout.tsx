@@ -11,31 +11,33 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('admin_session')?.value;
+  const sessionCookie = (await cookieStore).get('admin_session')?.value;
 
   if (!sessionCookie) {
     redirect('/login');
   }
 
   try {
-    // 1. Cryptographically verify the session cookie is real and not expired
+    // 1. Cryptographically verify the session cookie
     const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
 
-    // 2. The Ultimate Security Check: Double-check the custom claim
+    // 2. Security Check
     if (decodedClaims.role !== 'super_admin') {
-      console.warn(`Unauthorized access attempt by ${decodedClaims.email}`);
-      throw new Error('Insufficient permissions');
+      redirect('/login');
     }
+
+    const adminData = {
+      name: decodedClaims.name || 'Admin',
+      email: decodedClaims.email || '',
+    };
 
     // Pass successfully: Render the Admin Dashboard
     return (
       <div className="flex min-h-screen bg-creamWhite">
-        {/* Sidebar - Fixed width component */}
         <Sidebar />
 
-        {/* Main Content Area */}
         <div className="flex-1 ml-72 flex flex-col min-h-screen">
-          <DynamicHeader />
+          <DynamicHeader adminData={adminData} />
           
           <main className="flex-1 p-8 md:p-12 lg:p-16">
             {children}
@@ -45,7 +47,6 @@ export default async function DashboardLayout({
     );
 
   } catch (error) {
-    // If the cookie is forged, expired, or they aren't an admin, kick them out
     console.error('Admin verification failed:', error);
     redirect('/login');
   }

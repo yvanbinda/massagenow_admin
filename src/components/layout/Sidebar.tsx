@@ -9,16 +9,12 @@ import {
   ShieldCheck, 
   CreditCard, 
   Settings, 
-  LogOut 
+  LogOut,
+  Database
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { cn } from "@/lib/utils";
 import { t } from "@/lib/i18n";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
 
 export const Sidebar = () => {
   const pathname = usePathname();
@@ -28,6 +24,7 @@ export const Sidebar = () => {
     { name: t('sidebar.kyc'), href: '/dashboard/kyc', icon: ShieldCheck },
     { name: t('sidebar.users'), href: '/dashboard/users', icon: Users },
     { name: t('sidebar.payments'), href: '/dashboard/payments', icon: CreditCard },
+    { name: t('header.audit_logs'), href: '/dashboard/audit-logs', icon: Database },
     { name: t('sidebar.settings'), href: '/dashboard/settings', icon: Settings },
   ];
 
@@ -37,7 +34,7 @@ export const Sidebar = () => {
         <Logo theme="dark" iconSize={28} />
       </div>
 
-      <nav className="flex-1 px-4 py-4 space-y-2">
+      <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto scrollbar-hide">
         {navItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
           return (

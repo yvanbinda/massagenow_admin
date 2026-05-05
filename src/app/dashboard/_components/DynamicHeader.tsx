@@ -2,18 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { Bell, Search, Command } from "lucide-react";
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { cn } from "@/lib/utils";
 import { CommandPalette } from "./CommandPalette";
 import { HeaderAlerts } from "./HeaderAlerts";
 import { IdentityMenu } from "./IdentityMenu";
 import { t } from "@/lib/i18n";
 
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+interface DynamicHeaderProps {
+  adminData: {
+    name: string;
+    email: string;
+  } | null;
 }
 
-export const DynamicHeader = () => {
+export const DynamicHeader = ({ adminData }: DynamicHeaderProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAlertsOpen, setIsAlertsOpen] = useState(false);
@@ -26,13 +28,11 @@ export const DynamicHeader = () => {
     };
     window.addEventListener('scroll', handleScroll);
     
-    // Check for unread notifications
     const checkNotifications = async () => {
       try {
         const response = await fetch('/api/admin/notifications');
         if (response.ok) {
           const data = await response.json();
-          // Check if any notification in the latest list is unread
           setHasUnread(data.some((n: any) => !n.isRead));
         }
       } catch (error) {
@@ -41,7 +41,6 @@ export const DynamicHeader = () => {
     };
 
     checkNotifications();
-    // Refresh unread status every 60 seconds
     const interval = setInterval(checkNotifications, 60000);
 
     return () => {
@@ -49,6 +48,10 @@ export const DynamicHeader = () => {
       clearInterval(interval);
     };
   }, []);
+
+  const initials = adminData?.name 
+    ? adminData.name.split(' ').map(n => n[0]).join('').toUpperCase()
+    : 'AD';
 
   return (
     <>
@@ -70,7 +73,7 @@ export const DynamicHeader = () => {
         {/* Center: Search Command Bar Trigger */}
         <button 
           onClick={() => setIsSearchOpen(true)}
-          className="hidden md:flex items-center gap-3 bg-lightSage px-6 py-2.5 rounded-full w-96 group hover:ring-2 hover:ring-sageGreen/20 transition-all text-left"
+          className="hidden md:flex items-center gap-3 bg-lightSage/40 hover:bg-lightSage px-6 py-2.5 rounded-full w-96 group hover:ring-2 hover:ring-sageGreen/20 transition-all text-left border border-lightSage"
         >
           <Search size={18} className="text-mediumSage group-hover:text-darkSage" />
           <span className="flex-1 text-mediumSage/60 font-abeezee text-sm">
@@ -89,15 +92,13 @@ export const DynamicHeader = () => {
               setIsIdentityOpen(false);
             }}
             className={cn(
-              "relative p-2 rounded-full transition-colors group",
-              isAlertsOpen ? "bg-lightSage" : "hover:bg-lightSage"
+              "relative p-2.5 rounded-xl transition-all group",
+              isAlertsOpen ? "bg-lightSage text-darkSage shadow-inner" : "hover:bg-lightSage text-secondaryCharcoal hover:text-darkSage"
             )}
           >
-            <Bell size={22} className={cn("transition-colors", isAlertsOpen ? "text-darkSage" : "text-secondaryCharcoal group-hover:text-darkSage")} />
-            
-            {/* Conditional Red Dot */}
+            <Bell size={22} />
             {hasUnread && (
-              <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full ring-2 ring-white animate-pulse" />
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-error rounded-full ring-2 ring-white animate-pulse" />
             )}
           </button>
           
@@ -112,23 +113,21 @@ export const DynamicHeader = () => {
                 setIsAlertsOpen(false);
               }}
               className={cn(
-                "w-9 h-9 rounded-full ring-2 ring-offset-2 ring-offset-creamWhite overflow-hidden cursor-pointer hover:scale-105 transition-all",
+                "w-10 h-10 rounded-full ring-2 ring-offset-2 ring-offset-creamWhite overflow-hidden cursor-pointer hover:scale-105 transition-all shadow-sm",
                 isIdentityOpen ? "ring-darkSage" : "ring-sageGreen"
               )}
             >
-               <div className="w-full h-full bg-darkSage flex items-center justify-center text-white text-xs font-bold font-abeezee">
-                  AD
+               <div className="w-full h-full bg-darkSage flex items-center justify-center text-white text-sm font-bold font-abeezee">
+                  {initials}
                </div>
             </button>
           </div>
 
-          {/* Popovers */}
           <HeaderAlerts isOpen={isAlertsOpen} onClose={() => setIsAlertsOpen(false)} />
-          <IdentityMenu isOpen={isIdentityOpen} onClose={() => setIsIdentityOpen(false)} />
+          <IdentityMenu isOpen={isIdentityOpen} onClose={() => setIsIdentityOpen(false)} adminData={adminData} />
         </div>
       </header>
 
-      {/* Overlays */}
       <CommandPalette isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   );

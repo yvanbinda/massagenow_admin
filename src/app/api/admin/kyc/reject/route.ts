@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { adminService } from '@/services/admin.service';
-import { checkSuperAdminSession } from '@/lib/auth-utils';
+import { getSuperAdminSession } from '@/lib/auth-utils';
 
 export async function POST(request: Request) {
   try {
-    const isAuthorized = await checkSuperAdminSession();
-    if (!isAuthorized) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const session = await getSuperAdminSession();
+    if (!session) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const { id, reason } = await request.json();
 
@@ -13,7 +13,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing ID or Reason' }, { status: 400 });
     }
 
-    await adminService.rejectTherapist(id, reason);
+    // Pass the admin session data for auditing
+    await adminService.rejectTherapist(id, reason, {
+      id: session.uid,
+      name: session.name || session.email || 'Admin'
+    });
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error: any) {

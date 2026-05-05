@@ -157,3 +157,16 @@ export interface Story {
   createdAt: string;
   expiresAt: string; 
 }
+
+// --- 9. AUDIT LOG MODEL ---
+export interface AuditLog {
+  id: string;
+  adminId: string;
+  adminName: string;
+  action: 'approve_therapist' | 'reject_therapist' | 'update_settings' | 'invite_admin' | 'delete_user';
+  targetId: string; // The ID of the user/therapist/booking affected
+  targetName: string;
+  details: string; // "Approbation du thérapeute Maya Riviera"
+  ipAddress?: string;
+  createdAt: string;
+}

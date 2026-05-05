@@ -12,7 +12,9 @@ import {
   CreditCard,
   ExternalLink,
   Trash2,
-  Flag
+  Flag,
+  Calendar,
+  MessageSquare
 } from "lucide-react";
 import { t } from "@/lib/i18n";
 import { Badge } from "@/components/ui/Badge";
@@ -62,9 +64,13 @@ export default function TherapistDetailClient({ therapist }: TherapistDetailClie
         <div className="lg:col-span-3 space-y-6">
           <Card className="flex flex-col items-center text-center p-8">
             <div className="w-24 h-24 rounded-full ring-4 ring-sageGreen/20 ring-offset-4 ring-offset-white overflow-hidden mb-6">
-               <div className="w-full h-full bg-darkSage flex items-center justify-center text-white text-3xl font-bold font-abeezee">
-                 {therapist.name?.charAt(0) || 'T'}
-               </div>
+               {therapist.avatarUrl ? (
+                 <img src={therapist.avatarUrl} alt={therapist.name} className="w-full h-full object-cover" />
+               ) : (
+                 <div className="w-full h-full bg-darkSage flex items-center justify-center text-white text-3xl font-bold font-abeezee">
+                   {therapist.name?.charAt(0) || 'T'}
+                 </div>
+               )}
             </div>
             <h3 className="text-xl font-bold text-charcoal font-abeezee mb-1">{therapist.name}</h3>
             <p className="text-xs text-mediumSage font-medium uppercase tracking-widest mb-6">
@@ -94,10 +100,12 @@ export default function TherapistDetailClient({ therapist }: TherapistDetailClie
                 </h4>
                 <ShieldCheck size={18} className="text-success" />
              </div>
-             <Button variant="outline" className="w-full gap-2 border-success/20 text-success hover:bg-success/5">
-                <ExternalLink size={14} />
-                Documents KYC
-             </Button>
+             <Link href="/dashboard/kyc" className="w-full">
+               <Button variant="outline" className="w-full gap-2 border-success/20 text-success hover:bg-success/5">
+                  <ExternalLink size={14} />
+                  Documents KYC
+               </Button>
+             </Link>
           </Card>
 
           <Card className="p-6 bg-error/5 border-none">
@@ -136,31 +144,89 @@ export default function TherapistDetailClient({ therapist }: TherapistDetailClie
             </div>
           </Card>
 
-          <Card className="bg-creamWhite/30">
-            <div className="flex items-center justify-between mb-8">
-               <h4 className="text-sm font-bold text-charcoal uppercase tracking-wider font-abeezee">
-                 Score de Santé Match
-               </h4>
-               <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-lightSage rounded-full">
-                  <Star size={14} className="text-warning fill-warning" />
-                  <span className="text-sm font-bold text-charcoal">{(therapist.rating || 5.0) * 20}%</span>
-               </div>
+          {/* Booking History Timeline */}
+          <Card>
+            <h4 className="text-sm font-bold text-charcoal uppercase tracking-wider font-abeezee mb-6 border-b border-lightSage pb-4 flex items-center justify-between">
+              {t('users.detail.timeline_title')}
+              <Badge variant="neutral">{therapist.bookings?.length || 0} Sessions</Badge>
+            </h4>
+            <div className="space-y-6">
+               {therapist.bookings?.length > 0 ? (
+                 <div className="relative pl-6 space-y-8 before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-px before:bg-lightSage">
+                    {therapist.bookings.slice(0, 5).map((booking: any, index: number) => (
+                      <div key={index} className="relative flex items-start gap-4">
+                         <div className={cn(
+                           "absolute -left-[19px] top-1.5 w-3 h-3 rounded-full border-2 border-white shadow-sm",
+                           booking.status === 'completed' ? 'bg-success' : 'bg-error'
+                         )} />
+                         <div className="flex-1 bg-creamWhite/30 p-4 rounded-xl border border-lightSage/50">
+                            <div className="flex justify-between items-center mb-1">
+                               <span className="text-sm font-bold text-charcoal font-abeezee">{booking.serviceTitleSnapshot}</span>
+                               <Badge variant={booking.status === 'completed' ? 'success' : 'error'} className="text-[10px]">
+                                  {booking.status}
+                               </Badge>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-mediumSage flex items-center gap-1.5">
+                                <Calendar size={12} /> {new Date(booking.startTime).toLocaleDateString('fr-FR')}
+                              </span>
+                              <span className="text-xs font-bold text-darkSage">{booking.priceSnapshot} {currency}</span>
+                            </div>
+                         </div>
+                      </div>
+                    ))}
+                 </div>
+               ) : (
+                 <div className="text-center py-8 text-mediumSage font-abeezee italic border border-dashed border-lightSage rounded-xl">
+                    {t('users.detail.no_reservations')}
+                 </div>
+               )}
             </div>
-            <div className="h-3 w-full bg-lightSage rounded-full overflow-hidden">
-               <div className="h-full bg-darkSage" style={{ width: `${(therapist.rating || 5.0) * 20}%` }} />
-            </div>
-            <p className="mt-4 text-xs text-mediumSage font-abeezee leading-relaxed italic">
-              Ce score reflète l'alignement des services du thérapeute avec la demande locale des patients.
-            </p>
           </Card>
 
           <Card>
             <h4 className="text-sm font-bold text-charcoal uppercase tracking-wider font-abeezee mb-6 border-b border-lightSage pb-4 flex items-center justify-between">
-              Avis & Signalements
+              {t('users.detail.avis_title')}
               <Badge variant="neutral">{therapist.reviewCount || 0} Avis</Badge>
             </h4>
-            <div className="flex flex-col items-center justify-center p-8 text-center bg-creamWhite/20 rounded-xl border border-dashed border-lightSage">
-               <p className="text-sm text-mediumSage font-abeezee">Aucun avis récent.</p>
+            <div className="space-y-6">
+               {therapist.reviews?.length > 0 ? therapist.reviews.map((review: any) => (
+                 <div key={review.id} className="flex gap-4 group">
+                    <div className="w-8 h-8 rounded-full bg-lightSage shrink-0 overflow-hidden">
+                       {review.reviewerAvatarUrl ? (
+                         <img src={review.reviewerAvatarUrl} alt={review.reviewerName} className="w-full h-full object-cover" />
+                       ) : (
+                         <div className="w-full h-full flex items-center justify-center text-darkSage text-[10px] font-bold">
+                           {review.reviewerName?.charAt(0) || 'C'}
+                         </div>
+                       )}
+                    </div>
+                    <div className="flex-1 space-y-1">
+                       <div className="flex justify-between items-center">
+                          <span className="text-xs font-bold text-charcoal">{review.reviewerName}</span>
+                          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                             <button className="p-1.5 text-mediumSage hover:text-error transition-colors"><Flag size={14} /></button>
+                             <button className="p-1.5 text-mediumSage hover:text-error transition-colors"><Trash2 size={14} /></button>
+                          </div>
+                       </div>
+                       <div className="flex gap-0.5 text-warning mb-1">
+                          {Array.from({ length: 5 }).map((_, s) => (
+                            <Star key={s} size={10} className={cn(s < review.rating ? "fill-warning" : "text-lightSage")} />
+                          ))}
+                       </div>
+                       <p className="text-xs text-secondaryCharcoal leading-relaxed font-abeezee">
+                         "{review.text}"
+                       </p>
+                       <span className="text-[9px] text-mediumSage italic">
+                         {new Date(review.createdAt).toLocaleDateString('fr-FR')}
+                       </span>
+                    </div>
+                 </div>
+               )) : (
+                 <div className="flex flex-col items-center justify-center p-8 text-center bg-creamWhite/20 rounded-xl border border-dashed border-lightSage">
+                    <p className="text-sm text-mediumSage font-abeezee">{t('users.detail.no_avis')}</p>
+                 </div>
+               )}
             </div>
           </Card>
         </div>
@@ -179,9 +245,9 @@ export default function TherapistDetailClient({ therapist }: TherapistDetailClie
                    <CreditCard size={18} className={therapist.stripeConnectId ? "text-success" : "text-warning"} />
                 </div>
                 <div>
-                   <p className="text-xs font-bold text-charcoal uppercase">{therapist.stripeConnectId ? 'Compte Actif' : 'Non Connecté'}</p>
+                   <p className="text-xs font-bold text-charcoal uppercase">{therapist.stripeConnectId ? t('users.detail.stripe_active') : t('users.detail.stripe_not_connected')}</p>
                    <p className={cn("text-[10px] font-bold", therapist.stripeConnectId ? "text-success" : "text-warning")}>
-                      {therapist.stripeConnectId ? 'Vérifié par Stripe' : 'Action requise'}
+                      {therapist.stripeConnectId ? t('users.detail.stripe_verified') : t('users.detail.stripe_restricted')}
                    </p>
                 </div>
              </div>
@@ -205,7 +271,7 @@ export default function TherapistDetailClient({ therapist }: TherapistDetailClie
 
           <Card className="p-6">
              <h4 className="text-xs font-bold text-charcoal uppercase tracking-widest font-abeezee mb-6">
-               Derniers Reversements
+               {t('users.detail.payouts_recent')}
              </h4>
              <div className="text-center py-4 text-xs text-mediumSage italic">
                 Aucun virement récent.
