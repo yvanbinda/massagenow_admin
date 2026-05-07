@@ -3,49 +3,69 @@
 import React from 'react';
 import { Card } from "@/components/ui/Card";
 import { t } from "@/lib/i18n";
-import { NotificationModel } from "@/types/models";
+import { AuditLog } from "@/types/models";
 import { useRouter } from "next/navigation";
+import { Shield, UserPlus, CheckCircle2, AlertTriangle, Trash2, Clock } from "lucide-react";
 
 interface RecentAlertsProps {
-  notifications?: NotificationModel[];
+  logs?: AuditLog[];
 }
 
-const AlertItem = ({ notification }: { notification: NotificationModel }) => {
+const getActionIcon = (action: AuditLog['action']) => {
+  switch (action) {
+    case 'approve_therapist': return <CheckCircle2 size={14} className="text-success" />;
+    case 'reject_therapist': return <AlertTriangle size={14} className="text-warning" />;
+    case 'invite_admin': return <UserPlus size={14} className="text-darkSage" />;
+    case 'delete_user': return <Trash2 size={14} className="text-error" />;
+    default: return <Shield size={14} className="text-mediumSage" />;
+  }
+};
+
+const LogItem = ({ log }: { log: AuditLog }) => {
   const router = useRouter();
   
   return (
     <div 
-      className="flex gap-4 items-start group cursor-pointer hover:bg-lightSage/10 p-2 -mx-2 rounded-xl transition-all"
-      onClick={() => router.push('/dashboard/notifications')}
+      className="flex gap-4 items-start group cursor-pointer hover:bg-lightSage/10 p-3 -mx-2 rounded-xl transition-all"
+      onClick={() => router.push('/dashboard/audit-logs')}
     >
-      <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 transition-transform group-hover:scale-125 ${
-        notification.isRead ? 'bg-lightSage' : 'bg-darkSage'
-      }`} />
+      <div className="mt-1 p-1.5 bg-creamWhite border border-lightSage rounded-lg shadow-sm group-hover:bg-white transition-colors">
+        {getActionIcon(log.action)}
+      </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-abeezee font-bold text-charcoal truncate">{notification.title}</p>
-        <p className="text-[10px] font-abeezee text-mediumSage">
-          {new Date(notification.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} • ID: {notification.id.substring(0, 4)}
+        <p className="text-sm font-abeezee font-bold text-charcoal truncate">
+          {log.adminName}
         </p>
+        <p className="text-[11px] text-mediumSage leading-snug line-clamp-1 italic">
+          {log.details}
+        </p>
+        <div className="flex items-center gap-1.5 mt-1 text-[9px] font-bold text-mediumSage uppercase tracking-tighter">
+          <Clock size={10} />
+          {new Date(log.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+        </div>
       </div>
     </div>
   );
 };
 
-export const RecentAlerts = ({ notifications = [] }: RecentAlertsProps) => {
+export const RecentAlerts = ({ logs = [] }: RecentAlertsProps) => {
   return (
-    <Card className="bg-white shadow-none border-lightSage">
+    <Card className="bg-white shadow-sm border-lightSage h-full">
       <h4 className="font-bold font-abeezee text-charcoal mb-4 border-b border-lightSage pb-4 text-sm uppercase tracking-wider">
-        {t('dashboard.alerts.title')}
+        Actions Récentes
       </h4>
-      <div className="space-y-3 max-h-[220px] overflow-y-auto pr-2 scrollbar-hide">
-        {notifications.length > 0 ? (
-          notifications.map((notif) => (
-            <AlertItem key={notif.id} notification={notif} />
+      <div className="space-y-1 max-h-[300px] overflow-y-auto pr-1 scrollbar-hide">
+        {logs.length > 0 ? (
+          logs.map((log) => (
+            <LogItem key={log.id} log={log} />
           ))
         ) : (
-          <p className="text-center py-6 text-xs text-mediumSage italic">
-            Aucune alerte récente.
-          </p>
+          <div className="py-12 text-center space-y-2">
+            <Shield className="mx-auto text-lightSage opacity-20" size={32} />
+            <p className="text-xs text-mediumSage font-abeezee italic">
+              Aucune activité enregistrée.
+            </p>
+          </div>
         )}
       </div>
     </Card>

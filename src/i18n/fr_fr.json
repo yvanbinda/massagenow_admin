@@ -2,6 +2,7 @@
   "common": {
     "currency": "CAD",
     "ago": "Il y a {n}h",
+    "ago_min": "Il y a {n} min",
     "just_now": "À l'instant",
     "none": "Aucun",
     "never": "Jamais",
@@ -192,7 +193,7 @@
   "dashboard": {
     "title": "Aperçu du système",
     "welcome": "Aperçu en temps réel des performances de la plateforme MassageNOW et des opérations des thérapeutes.",
-    "live_feed": "Flux en direct : Mis à jour il y a 2m",
+    "live_feed": "Flux en direct • Mis à jour il y a {n} min",
     "stats": {
       "revenue": "Revenu Brut",
       "therapists": "Pros Actifs",
@@ -214,7 +215,8 @@
       "title": "Alertes Récentes",
       "new_therapist": "Nouveau thérapeute inscrit",
       "kyc_uploaded": "Document KYC téléchargé",
-      "payout_failed": "Échec du virement : Stripe Connect"
+      "payout_failed": "Échec du virement : Stripe Connect",
+      "no_alerts": "Aucune alerte récente."
     }
   },
   "kyc": {

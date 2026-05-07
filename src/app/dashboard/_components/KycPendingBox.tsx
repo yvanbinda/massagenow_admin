@@ -24,7 +24,7 @@ export const KycPendingBox = ({ count = 0 }: KycPendingBoxProps) => {
           </div>
         </div>
       </div>
-      
+
       <div className="relative z-10 space-y-1">
         <div className="flex items-center gap-2">
           <ShieldAlert size={16} className="text-white/80" />

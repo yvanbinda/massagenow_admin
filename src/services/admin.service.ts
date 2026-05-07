@@ -12,12 +12,15 @@ export class AdminService {
   private auditRepo = new AuditRepository();
   private reviewRepo = new ReviewRepository();
 
+  /**
+   * Fetches a consolidated overview of the platform health.
+   */
   async getPlatformOverview() {
-    const [users, therapists, bookings, notifications] = await Promise.all([
+    const [users, therapists, bookings, logs] = await Promise.all([
       this.userRepo.getAllUsers(),
       this.userRepo.getActiveTherapists(),
       this.bookingRepo.getAllBookings(),
-      this.notificationRepo.getAdminNotifications(5)
+      this.auditRepo.getLatestLogs(5) // Fetch 5 most recent admin actions
     ]);
 
     const totalRevenue = bookings.reduce((sum, b) => sum + (b.priceSnapshot || 0), 0);
@@ -32,7 +35,7 @@ export class AdminService {
       totalRevenue,
       platformComm,
       recentBookings: bookings.slice(0, 10),
-      recentNotifications: notifications,
+      recentLogs: logs,
       chartData
     };
   }
@@ -41,17 +44,26 @@ export class AdminService {
     const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
     const now = new Date();
     const stats = [];
+
     for (let i = 6; i >= 0; i--) {
       const date = new Date(now);
       date.setDate(now.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
       const dayLabel = days[date.getDay()];
-      const count = bookings.filter(b => b.createdAt && b.createdAt.startsWith(dateStr)).length;
+
+      const count = bookings.filter(b => 
+        b.createdAt && b.createdAt.startsWith(dateStr)
+      ).length;
+
       stats.push({ name: dayLabel, count });
     }
+
     return stats;
   }
 
+  /**
+   * Approves a therapist's KYC and activates their profile.
+   */
   async approveTherapist(id: string, email: string, admin: { id: string, name: string }): Promise<void> {
     await this.userRepo.updateVerificationStatus(id, 'approved');
     await this.userRepo.createOrUpdateTherapistProfile(id, {
@@ -61,6 +73,8 @@ export class AdminService {
       reviewCount: 0,
     });
     await this.userRepo.updateUserCertification(id, true);
+
+    // Record in Audit Log
     await this.auditRepo.recordAction({
       adminId: admin.id,
       adminName: admin.name,
@@ -72,9 +86,14 @@ export class AdminService {
     });
   }
 
+  /**
+   * Rejects a therapist's KYC.
+   */
   async rejectTherapist(id: string, reason: string, admin: { id: string, name: string }): Promise<void> {
     const request = await this.userRepo.getUserById(id);
     await this.userRepo.updateVerificationStatus(id, 'rejected', reason);
+
+    // Record in Audit Log
     await this.auditRepo.recordAction({
       adminId: admin.id,
       adminName: admin.name,
@@ -86,9 +105,13 @@ export class AdminService {
     });
   }
 
+  /**
+   * Fetches pending KYC requests joined with User data.
+   */
   async getTherapistsForKyc() {
     const requests = await this.userRepo.getPendingKycRequests();
     const users = await this.userRepo.getAllUsers();
+    
     return requests.map(req => {
       const user = users.find(u => u.id === req.id);
       return {
@@ -113,11 +136,15 @@ export class AdminService {
     });
   }
 
+  /**
+   * Fetches all therapists for the directory with user details.
+   */
   async getTherapistsForDirectory() {
     const [profiles, users] = await Promise.all([
       this.userRepo.getActiveTherapists(),
       this.userRepo.getAllUsers()
     ]);
+
     return profiles.map(profile => {
       const user = users.find(u => u.id === profile.id);
       return {
@@ -138,9 +165,11 @@ export class AdminService {
       this.bookingRepo.getAllBookings(),
       this.userRepo.getAllUsers()
     ]);
+
     return bookings.map(booking => {
       const client = users.find(u => u.id === booking.clientId);
       const therapist = users.find(u => u.id === booking.therapistId);
+      
       return {
         ...booking,
         clientName: client?.name || 'Client Inconnu',
@@ -161,13 +190,11 @@ export class AdminService {
 
     if (!profile || !user) return null;
 
-    // Join client names for bookings
     const enrichedBookings = bookings.map(b => ({
       ...b,
       clientName: allUsers.find(u => u.id === b.clientId)?.name || 'Inconnu'
     }));
 
-    // Join authors for reviews
     const enrichedReviews = reviews.map(r => {
       const author = allUsers.find(u => u.id === r.clientId);
       return {
@@ -201,7 +228,6 @@ export class AdminService {
 
     if (!user) return null;
 
-    // Join therapist names for bookings
     const enrichedBookings = bookings.map(b => ({
       ...b,
       therapistName: allUsers.find(u => u.id === b.therapistId)?.name || 'Inconnu'
@@ -213,6 +239,30 @@ export class AdminService {
       reviews: reviews,
       totalSpent: bookings.reduce((sum, b) => sum + (b.priceSnapshot || 0), 0),
     };
+  }
+
+  /**
+   * Deactivates or removes a user from the system.
+   * We record this action in the audit log.
+   */
+  async deleteUser(id: string, admin: { id: string, name: string }): Promise<void> {
+    const user = await this.userRepo.getUserById(id);
+    
+    // In a professional system, we usually don't "hard delete" users 
+    // to preserve financial and historical data consistency.
+    // We mark them as deleted/suspended in their profile.
+    await this.userRepo.updateUserCertification(id, false);
+    // Optionally: Mark profile status as 'deleted' or 'suspended'
+    
+    await this.auditRepo.recordAction({
+      adminId: admin.id,
+      adminName: admin.name,
+      action: 'delete_user',
+      targetId: id,
+      targetName: user?.email || 'Utilisateur',
+      details: `Suppression/Désactivation du compte utilisateur : ${user?.email || id}`,
+      createdAt: new Date().toISOString()
+    });
   }
 
   async getAuditLogs() {
