@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { adminAuth, adminDb, isFirebaseAdminAvailable } from '@/lib/firebase-admin';
-import { adminService } from '@/services/admin.service';
 import { getSuperAdminSession } from '@/lib/auth-utils';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
@@ -42,7 +43,6 @@ export async function POST(request: Request) {
     });
 
     // 6. Record Audit Log
-    // Using a repository method directly or via adminService if exposed
     await adminDb.collection('audit_logs').add({
       adminId: session.uid,
       adminName: session.name || session.email || 'Admin',

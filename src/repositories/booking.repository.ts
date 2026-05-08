@@ -2,7 +2,9 @@ import { BaseRepository } from './base.repository';
 import { Booking } from '@/types/models';
 
 export class BookingRepository extends BaseRepository {
-  private collection = this.db.collection('bookings');
+  private get collection() {
+    return this.db.collection('bookings');
+  }
 
   async getAllBookings(): Promise<Booking[]> {
     const snapshot = await this.collection.orderBy('createdAt', 'desc').get();

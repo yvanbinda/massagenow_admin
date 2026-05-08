@@ -2,7 +2,9 @@ import { BaseRepository } from './base.repository';
 import { NotificationModel } from '@/types/models';
 
 export class NotificationRepository extends BaseRepository {
-  private collection = this.db.collection('notifications');
+  private get collection() {
+    return this.db.collection('notifications');
+  }
 
   async getAdminNotifications(limit: number = 20): Promise<NotificationModel[]> {
     const snapshot = await this.collection

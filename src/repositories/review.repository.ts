@@ -2,7 +2,9 @@ import { BaseRepository } from './base.repository';
 import { Review } from '@/types/models';
 
 export class ReviewRepository extends BaseRepository {
-  private collection = this.db.collection('reviews');
+  private get collection() {
+    return this.db.collection('reviews');
+  }
 
   /**
    * Fetches all reviews for a specific therapist.

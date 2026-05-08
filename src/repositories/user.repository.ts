@@ -2,24 +2,18 @@ import { BaseRepository } from './base.repository';
 import { User, TherapistProfile, VerificationRequest, Service } from '@/types/models';
 
 export class UserRepository extends BaseRepository {
-  private usersCollection = this.db.collection('users');
-  private verificationCollection = this.db.collection('verification_requests');
-  private therapistsCollection = this.db.collection('therapists');
+  // Use getters to prevent crashing during build if Firebase is not initialized
+  private get usersCollection() { return this.db.collection('users'); }
+  private get verificationCollection() { return this.db.collection('verification_requests'); }
+  private get therapistsCollection() { return this.db.collection('therapists'); }
 
   // --- 1. USER DATA ---
   
-  /**
-   * Fetches the global identity for all accounts.
-   */
   async getAllUsers(): Promise<User[]> {
     const snapshot = await this.usersCollection.get();
     return snapshot.docs.map(doc => this.serialize<User>(doc)!).filter(Boolean);
   }
 
-  /**
-   * Fetches all users from the system to be displayed in the directory.
-   * This includes everyone (standard users and those who have been certified as therapists).
-   */
   async getDirectoryUsers(): Promise<User[]> {
     const snapshot = await this.usersCollection.get();
     return snapshot.docs
@@ -27,9 +21,6 @@ export class UserRepository extends BaseRepository {
       .filter(u => u && u.id !== 'system_admin'); 
   }
 
-  /**
-   * Fetches only users who are not certified professionals.
-   */
   async getUncertifiedUsers(): Promise<User[]> {
     const snapshot = await this.usersCollection
       .where('isCertified', '==', false)

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
-import { adminService } from '@/services/admin.service';
+import { getAdminService } from '@/services/admin.service';
 import { getSuperAdminSession } from '@/lib/auth-utils';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
@@ -13,6 +15,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing ID or Reason' }, { status: 400 });
     }
 
+    const adminService = getAdminService();
     // Pass the admin session data for auditing
     await adminService.rejectTherapist(id, reason, {
       id: session.uid,

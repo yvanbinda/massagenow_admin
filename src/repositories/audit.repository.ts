@@ -2,7 +2,9 @@ import { BaseRepository } from './base.repository';
 import { AuditLog } from '@/types/models';
 
 export class AuditRepository extends BaseRepository {
-  private collection = this.db.collection('audit_logs');
+  private get collection() {
+    return this.db.collection('audit_logs');
+  }
 
   /**
    * Records a new administrative action in the audit log.
