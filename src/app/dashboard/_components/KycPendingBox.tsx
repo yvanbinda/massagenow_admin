@@ -1,33 +1,49 @@
 import React from 'react';
 import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { ShieldAlert, ArrowRight } from "lucide-react";
+import { ShieldAlert, ArrowRight, Shield } from "lucide-react";
+import { t } from "@/lib/i18n";
+import Link from 'next/link';
 
-export const KycPendingBox = () => {
+interface KycPendingBoxProps {
+  count?: number;
+}
+
+export const KycPendingBox = ({ count = 0 }: KycPendingBoxProps) => {
   return (
-    <Card variant="sage" className="flex flex-col justify-between h-full relative overflow-hidden">
-      <div className="absolute top-[-20px] right-[-20px] opacity-10">
-        <ShieldAlert size={120} />
-      </div>
-      
-      <div className="relative z-10">
-        <div className="bg-white/20 w-10 h-10 rounded-lg flex items-center justify-center mb-4">
-          <ShieldAlert size={20} className="text-white" />
+    <Card className="bg-[#546A63] border-none flex flex-col justify-between h-[155px] relative overflow-hidden shadow-lg p-6 group">
+      {/* Refined Top Right Floating Badge - Matches screenshot depth and alignment */}
+      <div className="absolute top-4 right-6 flex items-center justify-center pointer-events-none">
+        <div className="relative">
+          {/* Faint large shield background */}
+          <Shield size={48} className="text-white opacity-10" strokeWidth={1.5} />
+          {/* Overlaid circle badge with count */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-md shadow-inner">
+               <span className="text-white font-bold text-[10px]">{count}</span>
+            </div>
+          </div>
         </div>
-        <h3 className="text-xl font-bold font-abeezee mb-2">Pending KYC</h3>
-        <p className="text-brokenWhite/70 text-sm font-abeezee leading-relaxed">
-          There are 12 therapists waiting for identity and license verification.
+      </div>
+
+      <div className="relative z-10 space-y-1">
+        <div className="flex items-center gap-2">
+          <ShieldAlert size={16} className="text-white/80" />
+          <h3 className="text-xs font-bold font-abeezee text-white tracking-widest uppercase">
+            {t('kyc.pending_title')}
+          </h3>
+        </div>
+        <p className="text-brokenWhite/70 text-[11px] font-abeezee leading-snug max-w-[190px] line-clamp-2">
+          {t('kyc.pending_description').replace('{n}', count.toString())}
         </p>
       </div>
 
-      <div className="relative z-10 mt-8">
-        <Button 
-          variant="outline" 
-          className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 group"
-        >
-          Review Now
-          <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-        </Button>
+      <div className="relative z-10">
+        <Link href="/dashboard/kyc" className="w-full">
+          <button className="w-full h-11 bg-white/5 border border-white/20 text-white rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-3 text-[10px] font-bold uppercase tracking-widest shadow-sm group-hover:border-white/40">
+            {t('kyc.review_button')}
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </button>
+        </Link>
       </div>
     </Card>
   );
