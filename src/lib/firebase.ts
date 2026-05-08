@@ -1,7 +1,7 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
+import { getAuth, Auth } from "firebase/auth";
+import { getFirestore, Firestore } from "firebase/firestore";
+import { getStorage, FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -12,10 +12,27 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
+/**
+ * Robust check to see if we have valid configuration.
+ * Avoids initializing with strings like "undefined" which Vercel might pass.
+ */
+const isValidConfig = firebaseConfig.apiKey && firebaseConfig.apiKey !== "undefined";
 
-export { app, auth, db, storage };
+/**
+ * Initialize Firebase App conditionally to prevent build-time crashes.
+ */
+const app: FirebaseApp | undefined = (typeof window !== "undefined" && isValidConfig)
+  ? (getApps().length > 0 ? getApp() : initializeApp(firebaseConfig))
+  : undefined;
+
+/**
+ * Export Firebase services. 
+ * They will be initialized only if 'app' exists.
+ * If 'app' is undefined (like during build), we export empty objects cast to the correct type
+ * to prevent crashes, but they will never be called during the build process.
+ */
+export const auth: Auth = app ? getAuth(app) : ({} as Auth);
+export const db: Firestore = app ? getFirestore(app) : ({} as Firestore);
+export const storage: FirebaseStorage = app ? getStorage(app) : ({} as FirebaseStorage);
+
+export { app };
