@@ -16,12 +16,7 @@ import {
 } from "lucide-react";
 import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/Button";
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from "@/lib/utils";
 
 interface KycRecord {
   id: string;
@@ -51,7 +46,7 @@ export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'idFront' | 'idBack' | 'selfie' | 'license'>('idFront');
   const [showRequestForm, setShowRequestForm] = useState(false);
-  const [showConfirmModal, setShowConfirmConfirmModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [reason, setReason] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -68,12 +63,12 @@ export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
 
       if (!response.ok) throw new Error('Approval failed');
 
-      setShowConfirmConfirmModal(false);
+      setShowConfirmModal(false);
       onClose();
       router.refresh();
     } catch (error) {
       console.error(error);
-      alert("Erreur lors de l'approbation.");
+      alert(t('kyc.error_approve'));
     } finally {
       setIsProcessing(false);
     }
@@ -95,7 +90,7 @@ export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
       router.refresh();
     } catch (error) {
       console.error(error);
-      alert("Erreur lors du rejet.");
+      alert(t('kyc.error_reject'));
     } finally {
       setIsProcessing(false);
     }
@@ -113,7 +108,7 @@ export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
               {t('kyc.review_panel_title')}
             </h2>
             <p className="text-xs text-mediumSage font-medium font-abeezee uppercase tracking-widest mt-1">
-              {t('kyc.application_no')} #{record.id}
+              {t('kyc.application_no')} #{record.id.substring(0,8)}
             </p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-lightSage rounded-full transition-colors text-mediumSage">
@@ -121,7 +116,7 @@ export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-8 space-y-10">
+        <div className="flex-1 overflow-y-auto p-8 space-y-10 scrollbar-hide">
           {/* Section 1: Professional Context */}
           <section className="space-y-6">
             <div className="flex items-center gap-4">
@@ -140,7 +135,7 @@ export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
 
             <div className="bg-creamWhite/50 rounded-2xl p-5 border border-lightSage space-y-4">
                <div>
-                  <span className="text-[10px] font-bold text-mediumSage uppercase tracking-widest">Spécialités</span>
+                  <span className="text-[10px] font-bold text-mediumSage uppercase tracking-widest">{t('kyc.specialties_label')}</span>
                   <div className="flex flex-wrap gap-2 mt-2">
                      {record.specialties?.map((s, i) => (
                        <span key={i} className="px-3 py-1 bg-white border border-lightSage rounded-full text-[10px] font-bold text-darkSage">{s}</span>
@@ -148,7 +143,7 @@ export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
                   </div>
                </div>
                <div>
-                  <span className="text-[10px] font-bold text-mediumSage uppercase tracking-widest">Bio</span>
+                  <span className="text-[10px] font-bold text-mediumSage uppercase tracking-widest">{t('kyc.bio_label')}</span>
                   <p className="text-xs text-secondaryCharcoal leading-relaxed mt-1 font-abeezee italic">"{record.bio}"</p>
                </div>
             </div>
@@ -161,31 +156,33 @@ export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
                 {t('kyc.doc_viewer_title')}
               </h3>
               <div className="flex bg-lightSage/50 p-1 rounded-lg border border-lightSage overflow-x-auto scrollbar-hide">
-                <TabBtn active={activeTab === 'idFront'} onClick={() => setActiveTab('idFront')} label="ID Recto" />
-                <TabBtn active={activeTab === 'idBack'} onClick={() => setActiveTab('idBack')} label="ID Verso" />
-                <TabBtn active={activeTab === 'selfie'} onClick={() => setActiveTab('selfie')} label="Selfie" />
-                {record.docs.license && <TabBtn active={activeTab === 'license'} onClick={() => setActiveTab('license')} label="Licence" />}
+                <TabBtn active={activeTab === 'idFront'} onClick={() => setActiveTab('idFront')} label={t('kyc.id_recto')} />
+                <TabBtn active={activeTab === 'idBack'} onClick={() => setActiveTab('idBack')} label={t('kyc.id_verso')} />
+                <TabBtn active={activeTab === 'selfie'} onClick={() => setActiveTab('selfie')} label={t('kyc.selfie_tab')} />
+                {record.docs.license && <TabBtn active={activeTab === 'license'} onClick={() => setActiveTab('license')} label={t('kyc.license_tab')} />}
               </div>
             </div>
 
             <div className="relative bg-charcoal rounded-2xl h-[400px] flex items-center justify-center overflow-hidden border-4 border-white shadow-lg group">
-              <img 
-                src={(record.docs as any)[activeTab]} 
-                alt="Verification Document" 
-                className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
-              />
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-charcoal/80 backdrop-blur-md border border-white/10 p-2 rounded-xl">
-                <ControlButton icon={Maximize2} />
-                <ControlButton icon={RotateCw} />
-                <div className="w-px h-4 bg-white/10 mx-1" />
-                <ControlButton icon={Download} />
-              </div>
+              {/* @ts-ignore */}
+              {record.docs[activeTab] ? (
+                 <img 
+                    src={(record.docs as any)[activeTab]} 
+                    alt="Verification Document" 
+                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+                 />
+              ) : (
+                 <div className="text-white/20 text-center space-y-2">
+                    <AlertCircle size={48} className="mx-auto" />
+                    <p className="text-xs">Document non disponible</p>
+                 </div>
+              )}
             </div>
           </section>
         </div>
 
         {/* Section 3: Action Bar */}
-        <div className="p-6 border-t border-lightSage bg-white space-y-4 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]">
+        <div className="p-6 border-t border-lightSage bg-white space-y-4">
           {showRequestForm ? (
             <div className="animate-in slide-in-from-bottom-2 duration-300 space-y-3 pb-2">
               <textarea 
@@ -203,15 +200,15 @@ export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
                 >
                   {t('kyc.send_request')}
                 </Button>
-                <Button variant="ghost" onClick={() => setShowRequestForm(false)}>Annuler</Button>
+                <Button variant="ghost" onClick={() => setShowRequestForm(false)}>{t('common.cancel')}</Button>
               </div>
             </div>
           ) : (
             <div className="flex gap-3">
               <button 
-                onClick={() => setShowConfirmConfirmModal(true)}
+                onClick={() => setShowConfirmModal(true)}
                 disabled={isProcessing}
-                className="flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-darkSage text-white font-bold font-abeezee hover:bg-darkSage/90 transition-all shadow-lg shadow-darkSage/10"
+                className="flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-darkSage text-white font-bold font-abeezee hover:bg-darkSage/90 transition-all shadow-lg"
               >
                 <CheckCircle2 size={18} />
                 {t('kyc.approve_btn')}
@@ -232,14 +229,14 @@ export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
       {/* Confirmation Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-charcoal/60 backdrop-blur-sm" onClick={() => setShowConfirmConfirmModal(false)} />
+          <div className="absolute inset-0 bg-charcoal/60 backdrop-blur-sm" onClick={() => setShowConfirmModal(false)} />
           <div className="relative bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200 text-center">
              <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <ShieldCheck size={40} className="text-success" />
              </div>
-             <h3 className="text-2xl font-bold text-charcoal font-abeezee mb-2">Confirmer l'approbation</h3>
+             <h3 className="text-2xl font-bold text-charcoal font-abeezee mb-2">{t('kyc.confirm_title')}</h3>
              <p className="text-mediumSage text-sm font-abeezee leading-relaxed mb-8">
-               Êtes-vous sûr de vouloir approuver <strong>{record.professionalName}</strong> ? Cette action activera son profil sur la marketplace.
+               {t('kyc.confirm_body').replace('{name}', record.professionalName)}
              </p>
              <div className="flex flex-col gap-3">
                 <Button 
@@ -247,13 +244,13 @@ export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
                   onClick={handleApprove}
                   isLoading={isProcessing}
                 >
-                   Oui, Approuver & Activer
+                   {t('kyc.confirm_btn')}
                 </Button>
                 <button 
-                  onClick={() => setShowConfirmConfirmModal(false)}
+                  onClick={() => setShowConfirmModal(false)}
                   className="text-mediumSage font-bold text-sm uppercase tracking-widest hover:text-charcoal transition-colors py-2"
                 >
-                   Annuler
+                   {t('common.cancel')}
                 </button>
              </div>
           </div>

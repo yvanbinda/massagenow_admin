@@ -6,7 +6,7 @@ import DashboardClient from "./DashboardClient";
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  // 1. Fetch live metrics and notifications from Firestore via our Service Layer
+  // 1. Fetch live metrics and logs from Firestore via our Service Layer
   const stats = await adminService.getPlatformOverview();
   const kycTherapists = await adminService.getTherapistsForKyc();
 
@@ -19,7 +19,7 @@ export default async function DashboardPage() {
     platformComm: stats.platformComm,
     pendingKycCount: kycTherapists.length,
     chartData: stats.chartData,
-    recentNotifications: stats.recentNotifications,
+    recentLogs: stats.recentLogs,
   };
 
   return (

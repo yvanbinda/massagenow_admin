@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   Map as MapIcon, 
   Search, 
@@ -24,6 +25,7 @@ interface LiveMapClientProps {
 }
 
 export default function LiveMapClient({ activeBookings }: LiveMapClientProps) {
+  const router = useRouter();
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
   const [viewMode, setViewMode] = useState<'all' | 'in_progress'>('all');
 

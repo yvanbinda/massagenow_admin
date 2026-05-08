@@ -20,7 +20,7 @@ export class AdminService {
       this.userRepo.getAllUsers(),
       this.userRepo.getActiveTherapists(),
       this.bookingRepo.getAllBookings(),
-      this.auditRepo.getLatestLogs(5)
+      this.auditRepo.getLatestLogs(5) // Fetch 5 most recent admin actions
     ]);
 
     const totalRevenue = bookings.reduce((sum, b) => sum + (b.priceSnapshot || 0), 0);
@@ -74,6 +74,7 @@ export class AdminService {
     });
     await this.userRepo.updateUserCertification(id, true);
 
+    // Record in Audit Log
     await this.auditRepo.recordAction({
       adminId: admin.id,
       adminName: admin.name,
@@ -92,6 +93,7 @@ export class AdminService {
     const request = await this.userRepo.getUserById(id);
     await this.userRepo.updateVerificationStatus(id, 'rejected', reason);
 
+    // Record in Audit Log
     await this.auditRepo.recordAction({
       adminId: admin.id,
       adminName: admin.name,
@@ -105,7 +107,6 @@ export class AdminService {
 
   /**
    * Fetches pending KYC requests joined with User data.
-   * FIX: Correctly maps from the 'documents' Map in Firestore.
    */
   async getTherapistsForKyc() {
     const requests = await this.userRepo.getPendingKycRequests();

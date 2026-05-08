@@ -19,6 +19,7 @@ import {
   Star,
   Flag,
   UserX,
+  Download,
   Loader2
 } from "lucide-react";
 import { t } from "@/lib/i18n";
@@ -49,9 +50,7 @@ export default function PatientDetailClient({ patient }: PatientDetailClientProp
           name: patient.name 
         }),
       });
-
       if (!response.ok) throw new Error('Delete failed');
-
       setShowDeleteModal(false);
       router.push('/dashboard/users');
       router.refresh();
@@ -61,6 +60,16 @@ export default function PatientDetailClient({ patient }: PatientDetailClientProp
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleExport = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(patient, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `dossier_client_${patient.name.replace(/\s+/g, '_')}.json`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
   };
 
   return (
@@ -74,6 +83,10 @@ export default function PatientDetailClient({ patient }: PatientDetailClientProp
           <ChevronLeft size={20} />
           {t('users.detail.back')}
         </Link>
+        <Button onClick={handleExport} variant="outline" className="border-lightSage text-charcoal gap-2 h-10 text-xs">
+          <Download size={14} />
+          {t('common.export')}
+        </Button>
       </div>
 
       {/* Main Page Title */}
