@@ -1,7 +1,8 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from "next/navigation";
 import { 
   ChevronLeft, 
   MapPin, 
@@ -14,7 +15,9 @@ import {
   Trash2,
   Flag,
   Calendar,
-  MessageSquare
+  AlertTriangle,
+  Loader2,
+  UserX
 } from "lucide-react";
 import { t } from "@/lib/i18n";
 import { Badge } from "@/components/ui/Badge";
@@ -27,7 +30,36 @@ interface TherapistDetailClientProps {
 }
 
 export default function TherapistDetailClient({ therapist }: TherapistDetailClientProps) {
+  const router = useRouter();
   const currency = t('common.currency');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      const response = await fetch(`/api/admin/users/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          uid: therapist.id, 
+          action: 'delete',
+          name: therapist.name 
+        }),
+      });
+
+      if (!response.ok) throw new Error('Delete failed');
+
+      setShowDeleteModal(false);
+      router.push('/dashboard/users');
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      alert("Erreur lors de la suppression.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="space-y-8 pb-12">
@@ -116,7 +148,10 @@ export default function TherapistDetailClient({ therapist }: TherapistDetailClie
                 <Button variant="outline" className="w-full border-error/20 text-error hover:bg-error/10 hover:border-error/40 font-bold">
                   {t('users.detail.suspend')}
                 </Button>
-                <button className="w-full text-center text-[10px] font-bold text-error/60 hover:text-error uppercase tracking-widest transition-colors">
+                <button 
+                  onClick={() => setShowDeleteModal(true)}
+                  className="w-full text-center text-[10px] font-bold text-error/60 hover:text-error uppercase tracking-widest transition-colors"
+                >
                   {t('users.detail.remove')}
                 </button>
              </div>
@@ -144,7 +179,6 @@ export default function TherapistDetailClient({ therapist }: TherapistDetailClie
             </div>
           </Card>
 
-          {/* Booking History Timeline */}
           <Card>
             <h4 className="text-sm font-bold text-charcoal uppercase tracking-wider font-abeezee mb-6 border-b border-lightSage pb-4 flex items-center justify-between">
               {t('users.detail.timeline_title')}
@@ -280,6 +314,37 @@ export default function TherapistDetailClient({ therapist }: TherapistDetailClie
         </div>
 
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-charcoal/60 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)} />
+          <div className="relative bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200 text-center">
+             <div className="w-20 h-20 bg-error/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <UserX size={40} className="text-error" />
+             </div>
+             <h3 className="text-2xl font-bold text-charcoal font-abeezee mb-2">Confirmer la suppression</h3>
+             <p className="text-mediumSage text-sm font-abeezee leading-relaxed mb-8">
+               Êtes-vous sûr de vouloir supprimer <strong>{therapist.name}</strong> ? Cette action est irréversible et désactivera son accès.
+             </p>
+             <div className="flex flex-col gap-3">
+                <Button 
+                  className="w-full bg-error py-4 h-auto text-lg hover:bg-error/90" 
+                  onClick={handleDelete}
+                  isLoading={isDeleting}
+                >
+                   Oui, Supprimer le compte
+                </Button>
+                <button 
+                  onClick={() => setShowDeleteModal(false)}
+                  className="text-mediumSage font-bold text-sm uppercase tracking-widest hover:text-charcoal transition-colors py-2"
+                >
+                   Annuler
+                </button>
+             </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

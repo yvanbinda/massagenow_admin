@@ -7,7 +7,12 @@ import {
   Users, 
   UserPlus, 
   Trash2,
-  AlertCircle
+  AlertCircle,
+  Loader2,
+  X,
+  Mail,
+  User as UserIcon,
+  ShieldCheck
 } from "lucide-react";
 import { t } from "@/lib/i18n";
 import { Card } from "@/components/ui/Card";
@@ -28,6 +33,9 @@ export default function SettingsClient({ initialSettings, teamMembers }: Setting
   const [activeSection, setActiveSection] = useState<SettingsSection>('general');
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteData, setInviteModalData] = useState({ name: '', email: '' });
+  const [isInviting, setIsInviting] = useState(false);
   
   const [settings, setSettings] = useState(initialSettings);
 
@@ -64,6 +72,35 @@ export default function SettingsClient({ initialSettings, teamMembers }: Setting
       alert("Erreur lors de la sauvegarde des paramètres.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleInviteAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteData.name || !inviteData.email) return;
+
+    try {
+      setIsInviting(true);
+      const response = await fetch('/api/admin/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(inviteData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to invite admin');
+      }
+
+      setShowInviteModal(false);
+      setInviteModalData({ name: '', email: '' });
+      router.refresh();
+      alert("Invitation envoyée avec succès !");
+    } catch (error: any) {
+      console.error(error);
+      alert(error.message || "Erreur lors de l'invitation.");
+    } finally {
+      setIsInviting(false);
     }
   };
 
@@ -119,14 +156,6 @@ export default function SettingsClient({ initialSettings, teamMembers }: Setting
                   />
                   <div className="h-px bg-lightSage" />
                   <SettingToggle 
-                    title={t('settings.general.maintenance_mode')}
-                    description={t('settings.general.maintenance_mode_sub')}
-                    enabled={settings.maintenanceMode}
-                    onToggle={() => handleToggle('maintenanceMode')}
-                    variant="warning"
-                  />
-                  <div className="h-px bg-lightSage" />
-                  <SettingToggle 
                     title={t('settings.general.therapist_onboarding')}
                     description={t('settings.general.therapist_onboarding_sub')}
                     enabled={settings.therapistOnboarding}
@@ -173,20 +202,26 @@ export default function SettingsClient({ initialSettings, teamMembers }: Setting
                   <h3 className="font-bold text-charcoal font-abeezee uppercase tracking-wider text-sm">
                     {t('settings.team.title')}
                   </h3>
-                  <Button variant="outline" className="h-9 gap-2 text-xs border-darkSage/20 text-darkSage hover:bg-darkSage/5">
+                  <Button 
+                    onClick={() => setShowInviteModal(true)}
+                    variant="outline" 
+                    className="h-9 gap-2 text-xs border-darkSage/20 text-darkSage hover:bg-darkSage/5"
+                  >
                     <UserPlus size={14} />
                     {t('settings.team.invite_btn')}
                   </Button>
                 </div>
                 <div className="p-6 space-y-4">
-                  {teamMembers.map((member) => (
+                  {teamMembers.length > 0 ? teamMembers.map((member) => (
                     <TeamMember 
                       key={member.id}
                       name={member.name} 
                       email={member.email} 
-                      role={t('settings.team.role_super')} 
+                      role={member.role === 'super_admin' ? t('settings.team.role_super') : 'Utilisateur'} 
                     />
-                  ))}
+                  )) : (
+                    <p className="text-center py-4 text-xs text-mediumSage italic">Aucun membre d'équipe trouvé.</p>
+                  )}
                 </div>
               </Card>
             </div>
@@ -220,6 +255,77 @@ export default function SettingsClient({ initialSettings, teamMembers }: Setting
                 {t('settings.save')}
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invite Admin Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-charcoal/60 backdrop-blur-sm" onClick={() => setShowInviteModal(false)} />
+          <div className="relative bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
+             <div className="flex justify-between items-center mb-6">
+                <div className="w-12 h-12 bg-darkSage/10 rounded-xl flex items-center justify-center">
+                   <UserPlus size={24} className="text-darkSage" />
+                </div>
+                <button onClick={() => setShowInviteModal(false)} className="p-2 hover:bg-lightSage rounded-full transition-colors">
+                   <X size={20} className="text-mediumSage" />
+                </button>
+             </div>
+             
+             <h3 className="text-2xl font-bold text-charcoal font-abeezee mb-2">Inviter un administrateur</h3>
+             <p className="text-mediumSage text-sm font-abeezee leading-relaxed mb-8">
+               Le nouvel administrateur recevra un lien par email pour configurer son mot de passe et accéder au tableau de bord.
+             </p>
+
+             <form onSubmit={handleInviteAdmin} className="space-y-4">
+                <div className="space-y-2">
+                   <label className="text-[10px] font-bold text-mediumSage uppercase tracking-widest px-1">Nom complet</label>
+                   <div className="relative group">
+                      <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-mediumSage group-focus-within:text-darkSage transition-colors" size={18} />
+                      <input 
+                         required
+                         type="text" 
+                         value={inviteData.name}
+                         onChange={(e) => setInviteModalData(prev => ({ ...prev, name: e.target.value }))}
+                         placeholder="ex: Jean Dupont"
+                         className="w-full bg-creamWhite border border-lightSage pl-12 pr-4 py-3 rounded-xl text-sm font-abeezee outline-none focus:ring-2 focus:ring-sageGreen/20 transition-all"
+                      />
+                   </div>
+                </div>
+
+                <div className="space-y-2">
+                   <label className="text-[10px] font-bold text-mediumSage uppercase tracking-widest px-1">Adresse Email</label>
+                   <div className="relative group">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-mediumSage group-focus-within:text-darkSage transition-colors" size={18} />
+                      <input 
+                         required
+                         type="email" 
+                         value={inviteData.email}
+                         onChange={(e) => setInviteModalData(prev => ({ ...prev, email: e.target.value }))}
+                         placeholder="admin@massagenow.ca"
+                         className="w-full bg-creamWhite border border-lightSage pl-12 pr-4 py-3 rounded-xl text-sm font-abeezee outline-none focus:ring-2 focus:ring-sageGreen/20 transition-all"
+                      />
+                   </div>
+                </div>
+
+                <div className="pt-4 flex flex-col gap-3">
+                   <Button 
+                      type="submit"
+                      className="w-full bg-darkSage py-4 h-auto text-sm font-bold uppercase tracking-widest" 
+                      isLoading={isInviting}
+                   >
+                      Envoyer l'invitation
+                   </Button>
+                   <button 
+                      type="button"
+                      onClick={() => setShowInviteModal(false)}
+                      className="text-mediumSage font-bold text-[10px] uppercase tracking-widest hover:text-charcoal transition-colors py-2 text-center"
+                   >
+                      Annuler
+                   </button>
+                </div>
+             </form>
           </div>
         </div>
       )}
@@ -295,7 +401,7 @@ const TeamMember = ({ name, email, role, isCurrent }: { name: string, email: str
   <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-lightSage/20 transition-all group">
     <div className="flex items-center gap-4">
       <div className="w-10 h-10 rounded-full bg-lightSage flex items-center justify-center text-darkSage font-bold text-xs group-hover:bg-white transition-colors">
-        {name.charAt(0)}
+        {name?.charAt(0) || 'A'}
       </div>
       <div>
         <div className="flex items-center gap-2">

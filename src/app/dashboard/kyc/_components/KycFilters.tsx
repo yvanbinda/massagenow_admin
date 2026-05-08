@@ -12,9 +12,9 @@ function cn(...inputs: ClassValue[]) {
 export const KycFilters = ({ activeFilter, onChange }: { activeFilter: string, onChange: (filter: string) => void }) => {
   const filters = [
     { id: 'all', label: t('kyc.filter_all') },
-    { id: 'pending', label: t('kyc.filter_pending'), color: 'bg-warning/10 text-warning border-warning/20' },
-    { id: 'resubmit', label: t('kyc.filter_resubmit') },
-    { id: 'approved', label: t('kyc.filter_approved') },
+    { id: 'pending', label: t('kyc.filter_pending'), color: 'bg-warning text-white border-warning' },
+    { id: 'resubmit', label: t('kyc.filter_resubmit'), color: 'bg-error text-white border-error' },
+    { id: 'approved', label: t('kyc.filter_approved'), color: 'bg-success text-white border-success' },
   ];
 
   return (
@@ -24,10 +24,10 @@ export const KycFilters = ({ activeFilter, onChange }: { activeFilter: string, o
           key={filter.id}
           onClick={() => onChange(filter.id)}
           className={cn(
-            "px-5 py-2 rounded-full text-xs font-bold font-abeezee border transition-all whitespace-nowrap",
+            "px-5 py-2 rounded-full text-xs font-bold font-abeezee border transition-all whitespace-nowrap shadow-sm",
             activeFilter === filter.id
               ? (filter.color || "bg-darkSage text-white border-darkSage")
-              : "bg-white text-mediumSage border-lightSage hover:border-mediumSage"
+              : "bg-white text-mediumSage border-lightSage hover:border-mediumSage hover:bg-creamWhite/30"
           )}
         >
           {filter.label}

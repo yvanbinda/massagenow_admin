@@ -8,7 +8,12 @@
     "never": "Jamais",
     "cancel": "Annuler",
     "confirm": "Confirmer",
-    "export": "Exporter"
+    "export": "Exporter",
+    "name": "Nom complet",
+    "email": "Adresse Email",
+    "send": "Envoyer",
+    "success_op": "Opération réussie",
+    "error_op": "Une erreur est survenue"
   },
   "login": {
     "title": "Accès Sécurisé",
@@ -87,7 +92,7 @@
       "danger_zone": "Zone de Danger",
       "suspend": "Suspendre le compte",
       "force_reset": "Réinitialiser le mot de passe",
-      "remove": "Retirer du marché",
+      "remove": "Supprimer le compte",
       "services_title": "Menu des Services Actifs",
       "bookings_title": "Réservations Récentes",
       "stripe_status": "Statut Stripe Connect",
@@ -170,8 +175,6 @@
       "title": "État Opérationnel",
       "guest_mode": "Navigation Mode Invité",
       "guest_mode_sub": "Permettre aux utilisateurs de voir les thérapeutes sans être connectés.",
-      "maintenance_mode": "Mode Maintenance",
-      "maintenance_mode_sub": "Désactive l'accès aux applications mobiles pour tous les utilisateurs.",
       "therapist_onboarding": "Inscription de Nouveaux Thérapeutes",
       "therapist_onboarding_sub": "Mettre en pause les nouvelles demandes d'inscription au catalogue."
     },
@@ -185,9 +188,12 @@
     "team": {
       "title": "Gestion de l'Équipe",
       "invite_btn": "Inviter un Admin",
+      "invite_modal_title": "Inviter un administrateur",
+      "invite_modal_sub": "Le nouvel administrateur recevra un lien par email pour configurer son mot de passe.",
       "role_super": "Super Admin",
       "role_support": "Agent Support",
-      "you": "Vous"
+      "you": "Vous",
+      "no_members": "Aucun membre d'équipe trouvé."
     }
   },
   "dashboard": {
@@ -212,11 +218,11 @@
       "description": "La visualisation des pics de réservation quotidiens et de la disponibilité des thérapeutes sera affichée ici."
     },
     "alerts": {
-      "title": "Alertes Récentes",
+      "title": "Actions Récentes",
       "new_therapist": "Nouveau thérapeute inscrit",
       "kyc_uploaded": "Document KYC téléchargé",
       "payout_failed": "Échec du virement : Stripe Connect",
-      "no_alerts": "Aucune alerte récente."
+      "no_alerts": "Aucune action récente."
     }
   },
   "kyc": {
@@ -228,7 +234,7 @@
     "queue_title": "File d'attente de révision de conformité",
     "filter_all": "Tout",
     "filter_pending": "En attente",
-    "filter_resubmit": "Attente de re-téléchargement",
+    "filter_resubmit": "Rejetés / À compléter",
     "filter_approved": "Approuvé",
     "table_name": "Nom du candidat",
     "table_date": "Date de soumission",

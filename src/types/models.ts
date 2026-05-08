@@ -66,14 +66,16 @@ export interface VerificationRequest {
   bio: string;
   experienceLevel: string;
   avatarUrl: string;
-  email: string; // From user document join
-  name: string; // From user document join
+  email: string; 
+  name: string; 
   
-  // Documents
-  idFrontUrl: string;
-  idBackUrl: string;
-  selfieUrl: string;
-  licenseUrl?: string | null;
+  // Documents map structure
+  documents: {
+    idFront: string;
+    idBack: string;
+    selfie: string;
+    license?: string | null;
+  };
   
   status: 'pending' | 'approved' | 'rejected' | 'resubmit';
   submittedAt: string;

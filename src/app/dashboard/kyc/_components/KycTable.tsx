@@ -32,7 +32,7 @@ export const KycTable = ({ data, onRowClick }: KycTableProps) => {
       case 'approved': return <Badge variant="success">{t('kyc.status_approved')}</Badge>;
       case 'suspended':
       case 'rejected': return <Badge variant="error">{t('kyc.status_rejected')}</Badge>;
-      case 'resubmit': return <Badge variant="sage">{t('kyc.status_resubmit')}</Badge>;
+      case 'resubmit': return <Badge variant="error">{t('kyc.status_resubmit')}</Badge>; // Unified as error color
       default: return <Badge variant="neutral">{status}</Badge>;
     }
   };

@@ -22,7 +22,7 @@ try {
   });
 
   // The UID of the user you manually created in Firebase Authentication
-  const adminUid = 'B76Ip9ZInwa1tGuJZUjatREkLRp1';
+  const adminUid = 'ArcKmOTebIXIBO3o3mUwgwHXOF73';
 
   admin.auth().setCustomUserClaims(adminUid, { role: 'super_admin' })
     .then(() => {

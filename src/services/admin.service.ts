@@ -20,7 +20,7 @@ export class AdminService {
       this.userRepo.getAllUsers(),
       this.userRepo.getActiveTherapists(),
       this.bookingRepo.getAllBookings(),
-      this.auditRepo.getLatestLogs(5) // Fetch 5 most recent admin actions
+      this.auditRepo.getLatestLogs(5)
     ]);
 
     const totalRevenue = bookings.reduce((sum, b) => sum + (b.priceSnapshot || 0), 0);
@@ -74,7 +74,6 @@ export class AdminService {
     });
     await this.userRepo.updateUserCertification(id, true);
 
-    // Record in Audit Log
     await this.auditRepo.recordAction({
       adminId: admin.id,
       adminName: admin.name,
@@ -93,7 +92,6 @@ export class AdminService {
     const request = await this.userRepo.getUserById(id);
     await this.userRepo.updateVerificationStatus(id, 'rejected', reason);
 
-    // Record in Audit Log
     await this.auditRepo.recordAction({
       adminId: admin.id,
       adminName: admin.name,
@@ -107,6 +105,7 @@ export class AdminService {
 
   /**
    * Fetches pending KYC requests joined with User data.
+   * FIX: Correctly maps from the 'documents' Map in Firestore.
    */
   async getTherapistsForKyc() {
     const requests = await this.userRepo.getPendingKycRequests();
@@ -114,6 +113,8 @@ export class AdminService {
     
     return requests.map(req => {
       const user = users.find(u => u.id === req.id);
+      const docsMap = (req as any).documents || {};
+
       return {
         id: req.id,
         professionalName: req.professionalName,
@@ -127,10 +128,10 @@ export class AdminService {
         date: req.submittedAt,
         status: req.status,
         docs: {
-          idFront: req.idFrontUrl,
-          idBack: req.idBackUrl,
-          selfie: req.selfieUrl,
-          license: req.licenseUrl,
+          idFront: docsMap.idFront,
+          idBack: docsMap.idBack,
+          selfie: docsMap.selfie,
+          license: docsMap.license,
         },
       };
     });
@@ -241,18 +242,9 @@ export class AdminService {
     };
   }
 
-  /**
-   * Deactivates or removes a user from the system.
-   * We record this action in the audit log.
-   */
   async deleteUser(id: string, admin: { id: string, name: string }): Promise<void> {
     const user = await this.userRepo.getUserById(id);
-    
-    // In a professional system, we usually don't "hard delete" users 
-    // to preserve financial and historical data consistency.
-    // We mark them as deleted/suspended in their profile.
     await this.userRepo.updateUserCertification(id, false);
-    // Optionally: Mark profile status as 'deleted' or 'suspended'
     
     await this.auditRepo.recordAction({
       adminId: admin.id,

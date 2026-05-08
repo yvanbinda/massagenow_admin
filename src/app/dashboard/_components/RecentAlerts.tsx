@@ -26,7 +26,7 @@ const LogItem = ({ log }: { log: AuditLog }) => {
   
   return (
     <div 
-      className="flex gap-4 items-start group cursor-pointer hover:bg-lightSage/10 p-3 -mx-2 rounded-xl transition-all"
+      className="flex gap-4 items-start group cursor-pointer hover:bg-lightSage/10 p-3 -mx-2 rounded-xl transition-all border-b border-lightSage/30 last:border-0"
       onClick={() => router.push('/dashboard/audit-logs')}
     >
       <div className="mt-1 p-1.5 bg-creamWhite border border-lightSage rounded-lg shadow-sm group-hover:bg-white transition-colors">
@@ -39,7 +39,7 @@ const LogItem = ({ log }: { log: AuditLog }) => {
         <p className="text-[11px] text-mediumSage leading-snug line-clamp-1 italic">
           {log.details}
         </p>
-        <div className="flex items-center gap-1.5 mt-1 text-[9px] font-bold text-mediumSage uppercase tracking-tighter">
+        <div className="flex items-center gap-1.5 mt-1 text-[9px] font-bold text-mediumSage/50 uppercase tracking-tighter">
           <Clock size={10} />
           {new Date(log.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
         </div>

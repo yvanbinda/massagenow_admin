@@ -15,21 +15,19 @@ export default async function SettingsPage() {
 
   const initialSettings = {
     guestMode: configData?.guestMode ?? true,
-    maintenanceMode: configData?.maintenanceMode ?? false,
     therapistOnboarding: configData?.therapistOnboarding ?? true,
     commission: configData?.commission ?? "20",
     minPrice: configData?.minPrice ?? "50",
   };
 
-  // 2. Fetch all administrators for the team section
-  const teamMembers = await userRepo.getDirectoryUsers();
-  // Filter for super_admins if you have a specific way to identify them in the users collection
-  // For now, displaying all users as potential team members or filter by a specific criteria
+  // 2. Fetch actual administrators for the team section
+  const allUsers = await userRepo.getAllUsers();
+  const admins = allUsers.filter(u => (u as any).role === 'super_admin');
 
   return (
     <SettingsClient 
       initialSettings={initialSettings} 
-      teamMembers={teamMembers.slice(0, 10)} 
+      teamMembers={admins} 
     />
   );
 }
