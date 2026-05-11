@@ -182,7 +182,7 @@ export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
         </div>
 
         {/* Section 3: Action Bar */}
-        <div className="p-6 border-t border-lightSage bg-white space-y-4">
+        <div className="p-6 border-t border-lightSage bg-white space-y-4 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]">
           {showRequestForm ? (
             <div className="animate-in slide-in-from-bottom-2 duration-300 space-y-3 pb-2">
               <textarea 
@@ -208,7 +208,7 @@ export const KycReviewPanel = ({ record, onClose }: KycReviewPanelProps) => {
               <button 
                 onClick={() => setShowConfirmModal(true)}
                 disabled={isProcessing}
-                className="flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-darkSage text-white font-bold font-abeezee hover:bg-darkSage/90 transition-all shadow-lg"
+                className="flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-darkSage text-white font-bold font-abeezee hover:bg-darkSage/90 transition-all shadow-lg shadow-darkSage/10"
               >
                 <CheckCircle2 size={18} />
                 {t('kyc.approve_btn')}

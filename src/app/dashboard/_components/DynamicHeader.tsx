@@ -123,11 +123,13 @@ export const DynamicHeader = ({ adminData }: DynamicHeaderProps) => {
             </button>
           </div>
 
+          {/* Popovers */}
           <HeaderAlerts isOpen={isAlertsOpen} onClose={() => setIsAlertsOpen(false)} />
           <IdentityMenu isOpen={isIdentityOpen} onClose={() => setIsIdentityOpen(false)} adminData={adminData} />
         </div>
       </header>
 
+      {/* Overlays */}
       <CommandPalette isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   );

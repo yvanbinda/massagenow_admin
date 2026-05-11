@@ -1,11 +1,13 @@
 import React from 'react';
-import { adminService } from "@/services/admin.service";
+import { getAdminService } from "@/services/admin.service";
 import DashboardClient from "./DashboardClient";
 
 // Force dynamic rendering to ensure real-time data from Firestore
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
+  const adminService = getAdminService();
+  
   // 1. Fetch live metrics and logs from Firestore via our Service Layer
   const stats = await adminService.getPlatformOverview();
   const kycTherapists = await adminService.getTherapistsForKyc();

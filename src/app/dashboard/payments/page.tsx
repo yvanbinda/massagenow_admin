@@ -1,11 +1,13 @@
 import React from 'react';
-import { adminService } from "@/services/admin.service";
+import { getAdminService } from "@/services/admin.service";
 import PaymentsClient from "./PaymentsClient";
 
 // Force dynamic rendering to ensure real-time data from Firestore
 export const dynamic = 'force-dynamic';
 
 export default async function PaymentsPage() {
+  const adminService = getAdminService();
+
   // 1. Fetch live metrics and transactions from Firestore
   const [stats, transactionsData] = await Promise.all([
     adminService.getPlatformOverview(),

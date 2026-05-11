@@ -3,7 +3,7 @@ import { BookingRepository } from '@/repositories/booking.repository';
 import { NotificationRepository } from '@/repositories/notification.repository';
 import { AuditRepository } from '@/repositories/audit.repository';
 import { ReviewRepository } from '@/repositories/review.repository';
-import { Booking, AuditLog } from '@/types/models';
+import { Booking } from '@/types/models';
 
 export class AdminService {
   private get userRepo() { return new UserRepository(); }

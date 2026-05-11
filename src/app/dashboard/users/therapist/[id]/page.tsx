@@ -1,5 +1,5 @@
 import React from 'react';
-import { adminService } from "@/services/admin.service";
+import { getAdminService } from "@/services/admin.service";
 import TherapistDetailClient from "./TherapistDetailClient";
 import { notFound } from "next/navigation";
 
@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function TherapistDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const adminService = getAdminService();
 
   // Fetch real data from Firestore via our Service Layer
   const therapist = await adminService.getTherapistDetail(id);
