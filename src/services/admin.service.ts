@@ -208,8 +208,12 @@ export class AdminService {
   }
 }
 
+// Singleton for consistency
 let instance: AdminService | null = null;
 export const getAdminService = () => {
   if (!instance) instance = new AdminService();
   return instance;
 };
+
+// Singleton export to satisfy existing imports and build
+export const adminService = getAdminService();

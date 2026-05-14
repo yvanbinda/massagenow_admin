@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
-import { adminService } from '@/services/admin.service';
-import { checkSuperAdminSession } from '@/lib/auth-utils';
+import { getAdminService } from '@/services/admin.service';
+import { getSuperAdminSession } from '@/lib/auth-utils';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
-    const isAuthorized = await checkSuperAdminSession();
-    if (!isAuthorized) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const session = await getSuperAdminSession();
+    if (!session) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q')?.toLowerCase() || "";
@@ -13,6 +15,8 @@ export async function GET(request: Request) {
     if (!query || query.length < 2) {
       return NextResponse.json({ therapists: [], transactions: [], users: [] });
     }
+
+    const adminService = getAdminService();
 
     // Fetch all data to filter locally (Simple approach for admin panel)
     const [therapists, users, transactions] = await Promise.all([
