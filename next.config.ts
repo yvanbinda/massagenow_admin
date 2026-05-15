@@ -7,10 +7,8 @@ const nextConfig: NextConfig = {
     // the 'functions' directory which has its own independent dependencies.
     ignoreBuildErrors: true,
   },
-  eslint: {
-    // Same for ESLint
-    ignoreDuringBuilds: true,
-  },
+  // In Next.js 15+, ignoreDuringBuilds should be placed under experimental or handled differently
+  // but for now we just remove the invalid top-level key.
 };
 
 export default nextConfig;

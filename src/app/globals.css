@@ -1,6 +1,20 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-darkSage: #546A63;
+  --color-mediumSage: #7E8E84;
+  --color-creamWhite: #F9F9F7;
+  --color-charcoal: #3C4140;
+  --color-secondaryCharcoal: #4F4F4F;
+  --color-lightSage: #E8ECE9;
+  --color-brokenWhite: #D3D5CC;
+  --color-sageGreen: #ADB2A8;
+  --color-success: #7BA07E;
+  --color-warning: #D4A373;
+  --color-error: #BC5353;
+
+  --font-abeezee: var(--font-abeezee), sans-serif;
+}
 
 :root {
   --background: #F9F9F7;
@@ -10,17 +24,29 @@
 @layer base {
   body {
     @apply text-charcoal bg-creamWhite antialiased;
-    font-family: var(--font-abeezee), sans-serif;
+    font-family: var(--font-abeezee);
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-darkSage text-white px-6 py-3 rounded-lg font-medium transition-all hover:bg-opacity-90 active:scale-[0.98] flex items-center justify-center gap-2;
+    @apply bg-darkSage text-white px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2;
+  }
+
+  .btn-primary:hover {
+    opacity: 0.9;
+  }
+
+  .btn-primary:active {
+    @apply scale-[0.98];
   }
   
   .input-field {
-    @apply w-full bg-white border border-brokenWhite px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-sageGreen/30 focus:border-sageGreen text-charcoal placeholder:text-mediumSage/50 transition-all;
+    @apply w-full bg-white border border-brokenWhite px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-sageGreen/30 focus:border-sageGreen text-charcoal transition-all;
+  }
+
+  .input-field::placeholder {
+    @apply text-mediumSage/50;
   }
 
   .glass-card {
