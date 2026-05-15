@@ -98,16 +98,17 @@ export const onVerificationReviewed = onDocumentUpdated("verification_requests/{
     const fcmTokens = userDoc.data()?.fcmTokens || [];
 
     if (fcmTokens.length > 0) {
-      const payload = {
+      const message = {
         notification: { title, body },
         data: {
           click_action: 'FLUTTER_NOTIFICATION_CLICK',
           route: '/therapist/dashboard',
           type: type
-        }
+        },
+        tokens: fcmTokens,
       };
       try {
-        await messaging.sendToDevice(fcmTokens, payload);
+        await messaging.sendEachForMulticast(message);
       } catch (error) {
         console.error(`[NOTIF] FCM failed for ${uid}:`, error);
       }
