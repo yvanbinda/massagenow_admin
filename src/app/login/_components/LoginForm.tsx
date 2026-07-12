@@ -27,9 +27,11 @@ export const LoginForm = () => {
 
       if (!auth) {
         if (!isValidConfig) {
-          throw new Error("Firebase configuration is missing. Please check NEXT_PUBLIC_FIREBASE_API_KEY in Vercel.");
+          console.error("[Login Debug] CRITICAL: Firebase configuration is missing. Please check NEXT_PUBLIC_FIREBASE_API_KEY in Vercel.");
+        } else {
+          console.error("[Login Debug] Firebase Auth failed to initialize despite valid config.");
         }
-        throw new Error("Firebase Auth failed to initialize.");
+        throw new Error(t('login.error_generic'));
       }
 
       // 1. PHASE: Client Authentication
