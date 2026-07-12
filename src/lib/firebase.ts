@@ -27,12 +27,11 @@ const app: FirebaseApp | undefined = (typeof window !== "undefined" && isValidCo
 
 /**
  * Export Firebase services. 
- * They will be initialized only if 'app' exists.
- * If 'app' is undefined (like during build), we export empty objects cast to the correct type
- * to prevent crashes, but they will never be called during the build process.
+ * If 'app' is undefined (like during build or if config is missing),
+ * we export undefined to avoid 'e._getRecaptchaConfig is not a function' errors.
  */
-export const auth: Auth = app ? getAuth(app) : ({} as Auth);
-export const db: Firestore = app ? getFirestore(app) : ({} as Firestore);
-export const storage: FirebaseStorage = app ? getStorage(app) : ({} as FirebaseStorage);
+export const auth: Auth | undefined = app ? getAuth(app) : undefined;
+export const db: Firestore | undefined = app ? getFirestore(app) : undefined;
+export const storage: FirebaseStorage | undefined = app ? getStorage(app) : undefined;
 
-export { app };
+export { app, isValidConfig };

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Mail, Lock, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { auth } from "@/lib/firebase";
+import { auth, isValidConfig } from "@/lib/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { t } from "@/lib/i18n";
 
@@ -23,6 +23,15 @@ export const LoginForm = () => {
 
     try {
       console.log("[Login Debug] Starting client-side auth for:", email);
+      console.log("[Login Debug] Auth object available:", !!auth, "Config valid:", isValidConfig);
+
+      if (!auth) {
+        if (!isValidConfig) {
+          throw new Error("Firebase configuration is missing. Please check NEXT_PUBLIC_FIREBASE_API_KEY in Vercel.");
+        }
+        throw new Error("Firebase Auth failed to initialize.");
+      }
+
       // 1. PHASE: Client Authentication
       let userCredential;
       try {
