@@ -22,13 +22,15 @@ export const LoginForm = () => {
     setError(null);
 
     try {
+      console.log("[Login Debug] Starting client-side auth for:", email);
       // 1. PHASE: Client Authentication
       let userCredential;
       try {
         userCredential = await signInWithEmailAndPassword(auth, email, password);
+        console.log("[Login Debug] Client-side auth success. UID:", userCredential.user.uid);
       } catch (firebaseErr: any) {
         // Obfuscate technical Firebase codes
-        console.warn("[Auth] Client sign-in failed:", firebaseErr.code);
+        console.error("[Login Debug] Client sign-in failed. Code:", firebaseErr.code, "Message:", firebaseErr.message);
         
         // This usually means wrong email/password or provider disabled
         if (firebaseErr.code === 'auth/invalid-credential' || 
@@ -40,7 +42,9 @@ export const LoginForm = () => {
       }
 
       // 2. PHASE: Token Handshake
+      console.log("[Login Debug] Fetching ID Token...");
       const idToken = await userCredential.user.getIdToken();
+      console.log("[Login Debug] ID Token obtained. Sending to API...");
 
       // Send token to our secure API to bake the Session Cookie
       const response = await fetch("/api/auth/login", {
@@ -49,21 +53,26 @@ export const LoginForm = () => {
         body: JSON.stringify({ idToken }),
       });
 
+      console.log("[Login Debug] API Response status:", response.status);
       const data = await response.json().catch(() => ({}));
+      if (data.error) console.error("[Login Debug] API Error Message:", data.error);
 
       if (!response.ok) {
         // If password was right, but user isn't an admin (Custom Claim check failed)
         if (response.status === 403) {
+          console.warn("[Login Debug] 403 Forbidden - User lacks super_admin role");
           throw new Error(t('login.error_unauthorized'));
         }
         throw new Error(data.error || t('login.error_generic'));
       }
 
+      console.log("[Login Debug] Session created successfully. Redirecting...");
       // 3. PHASE: Navigation
       router.push("/dashboard");
       router.refresh();
 
     } catch (err: any) {
+      console.error("[Login Debug] Catch block error:", err.message);
       setError(err.message);
       // Safety: sign out if partially authenticated
       await auth.signOut().catch(() => {});
